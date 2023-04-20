@@ -1,5 +1,5 @@
 //
-//  NeonModifiers.swift
+//  HydrogenModifiers.swift
 //  
 //
 //  Created by Taylor Lineman on 4/20/23.
@@ -7,15 +7,15 @@
 
 import SwiftUI
 
-struct NeonDebugModifier: ViewModifier {
+struct HydrogenReporterModifier: ViewModifier {
     func body(content: Content) -> some View {
         content.overlay(DebugView())
     }
 }
 
 extension View {
-    func neonDebug() -> some View {
-        return self.modifier(NeonDebugModifier())
+    func hydrogenReporter() -> some View {
+        return self.modifier(HydrogenReporterModifier())
     }
     
     func debuggable(_ target: Any, id: String) -> some View {

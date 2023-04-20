@@ -13,6 +13,7 @@ class DebugHandler: ObservableObject {
         public var id: String { title }
         
         case console
+        case statistics
         case mirror(id: String, mirror: Mirror)
         case customView(id: String, view: AnyView)
         
@@ -20,6 +21,8 @@ class DebugHandler: ObservableObject {
             switch self {
             case .console:
                 return "Console"
+            case .statistics:
+                return "Statistics"
             case .mirror(let id, _):
                 return id
             case .customView(let id, _):
@@ -32,8 +35,8 @@ class DebugHandler: ObservableObject {
         }
     }
     
-    @Published var debugTabs: [DebugTab] = [.console]
-    @Published var currentTabIndex: Int = 0
+    @Published var debugTabs: [DebugTab] = [.statistics, .console]
+    @Published var currentTabIndex: Int = 1
     
     public static let shared = DebugHandler()
     

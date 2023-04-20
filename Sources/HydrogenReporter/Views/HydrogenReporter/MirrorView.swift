@@ -21,20 +21,17 @@ struct MirrorView: View {
             ForEach(reflectedVariables, id: \.label) { variable in
                 buildValueLabel(label: variable.label, value: variable.value)
             }
+            Spacer()
         }
     }
     
     @ViewBuilder
     func buildValueLabel(label: Optional<String>, value: Any) -> some View {
-        HStack {
-            Text("\(label ?? "No Label") =")
-                .bold()
-            
-            if let value = value as? Debuggable {
-                Text(value.swiftyDebugDescription)
-            } else {
-                Text("Not Debuggable")
-            }
+        if let value = value as? Debuggable {
+            RowView(label: "\(label ?? "No Label") =", data: value.swiftyDebugDescription)
+        } else {
+            RowView(label: "\(label ?? "No Label") =", data: "Not Debuggable")
+
         }
     }
 }

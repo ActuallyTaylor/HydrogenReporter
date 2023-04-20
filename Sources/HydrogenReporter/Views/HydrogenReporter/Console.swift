@@ -26,7 +26,6 @@ struct Console: View {
                     }
                 }
             }
-            .frame(maxHeight: 100)
         }
     }
     

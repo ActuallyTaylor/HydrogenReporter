@@ -43,7 +43,7 @@ struct SampleView: View {
                 }
             }
         }
-        .neonDebug()
+        .hydrogenReporter()
         .debuggable(self, id: "Main View")
         .debuggable(viewModel, id: "Model Publisher")
         .customDebuggableView(id: "Custom View", view: customView)

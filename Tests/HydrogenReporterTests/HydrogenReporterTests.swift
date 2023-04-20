@@ -1,7 +1,7 @@
 import XCTest
-@testable import NeonDebugger
+@testable import HydrogenReporter
 
-final class NeonDebuggerTests: XCTestCase {
+final class HydrogenReporterTests: XCTestCase {
     func testExample() throws {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
