@@ -208,8 +208,8 @@ struct SwiftyDebug: View {
                 }
             }
             .padding(10)
-            .background(Color.black.opacity(0.2))
-            .cornerRadius(5)
+            .addBorder(Color.accentColor.opacity(0.5), width: 1, cornerRadius: 7)
+            .background(.ultraThickMaterial)
             .padding(10)
         }
     }
