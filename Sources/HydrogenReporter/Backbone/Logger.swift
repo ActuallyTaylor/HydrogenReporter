@@ -139,6 +139,7 @@ public class Logger: ObservableObject {
         let totalWorkingLogs = logs.filter({$0.level == .working}).count
         let totalDebugLogs = logs.filter({$0.level == .debug}).count
 
+        let newTotalLogs = totalLogs == 0 ? 1 : totalLogs
         // Statistics Data to be logged at the top of the file
         compiledLogs.append("--- ✨ Total Logs: \(logs.count) ---\n")
         compiledLogs.append("--- \(LogLevel.fatal.emoji()) Total Fatal Error Logs: \(totalFatalLogs) ---\n")
@@ -148,13 +149,13 @@ public class Logger: ObservableObject {
         compiledLogs.append("--- \(LogLevel.success.emoji()) Total Success Logs: \(totalSuccessLogs) ---\n")
         compiledLogs.append("--- \(LogLevel.working.emoji()) Total Working Logs: \(totalWorkingLogs) ---\n")
         compiledLogs.append("--- \(LogLevel.debug.emoji()) Total Debug Logs: \(totalDebugLogs) ---\n")
-        compiledLogs.append("--- Fatal % \(totalFatalLogs / totalLogs) ")
-        compiledLogs.append("- Error % \(totalErrorLogs / totalLogs) ")
-        compiledLogs.append("- Warn % \(totalWarnLogs / totalLogs) ")
-        compiledLogs.append("- Info % \(totalInfoLogs / totalLogs) ")
-        compiledLogs.append("- Success % \(totalSuccessLogs / totalLogs) ")
-        compiledLogs.append("- Working % \(totalWorkingLogs / totalLogs) ")
-        compiledLogs.append("- Debug % \(totalDebugLogs / totalLogs) ")
+        compiledLogs.append("--- Fatal % \(getPercent(value: totalFatalLogs, divisor: newTotalLogs)) ")
+        compiledLogs.append("- Error % \(getPercent(value: totalErrorLogs, divisor: newTotalLogs)) ")
+        compiledLogs.append("- Warn % \(getPercent(value: totalWarnLogs, divisor: newTotalLogs)) ")
+        compiledLogs.append("- Info % \(getPercent(value: totalInfoLogs, divisor: newTotalLogs)) ")
+        compiledLogs.append("- Success % \(getPercent(value: totalSuccessLogs, divisor: newTotalLogs)) ")
+        compiledLogs.append("- Working % \(getPercent(value: totalWorkingLogs, divisor: newTotalLogs)) ")
+        compiledLogs.append("- Debug % \(getPercent(value: totalDebugLogs, divisor: newTotalLogs)) ")
         compiledLogs.append("---\n")
         
         compiledLogs.append("=== START LOGS ===\n")
@@ -173,6 +174,10 @@ public class Logger: ObservableObject {
         try compiledLogs.write(toFile: url.path, atomically: true, encoding: .utf8)
         
         return url
+    }
+
+    func getPercent(value: Int, divisor: Int) -> String {
+        return String(format: "%.2f", (Double(value) / Double(divisor)))
     }
 }
 
