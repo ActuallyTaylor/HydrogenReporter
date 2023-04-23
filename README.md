@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="/icon.png" alt="Hydrogen Reporter Logo" width="128" maxHeight=“128" />
+    <img src="/assets/icon.png" alt="Hydrogen Reporter Logo" width="128" maxHeight=“128" />
 </p>
 
 <p align="center">
