@@ -56,12 +56,17 @@ https://github.com/ActuallyTaylor/HydrogenReporter
 
 ### Sample Code
 #### Initialization
-To get started first import `HydrogenReporter` and then add the `.hydrogenReporter()` view modifier to your main view. This will initalize the reporter and add the floating menu to your app.
+To get started first import `HydrogenReporter` and then add the `.hydrogenReporter()` view modifier to your main view. This will initalize the reporter and add the floating menu to your app. The next step is to add your logger configuration so that Hydrogen can adapt to your needs. This is done by calling `Logger.shared.setLoggerConfig(config:)`.
 
 ```swift
 import HydrogenReporter
 
 struct SampleApp: App {
+
+    init() {
+            Logger.shared.setLoggerConfig(config: .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️"))
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
