@@ -179,7 +179,7 @@ A screenshot of the device statistics page that shows you information about the 
 ### Console
 A screenshot of the console when activated from the reporter view. Console logs from both Swift and your app are shown here.
 
-![Screenshot of the Console](./assets/console.png)
+![Screenshot of the Console](./assets/debugConsole.png)
 
 # Contact
 Any questions that you have can be directed towards the GitHub issues or my [Mastodon account](https://mastodon.social/@TaylorLineman)!
