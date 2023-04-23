@@ -134,3 +134,5 @@ struct SampleView: View {
 }
 ```
 
+# Contact
+Any questions that you have can be directed towards the GitHub issues or my [Mastodon account](https://mastodon.social/@TaylorLineman)!
