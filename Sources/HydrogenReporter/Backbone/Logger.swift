@@ -246,7 +246,7 @@ public class Logger: ObservableObject {
 
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: [:])
 
-        let fileName = "log[\(currentDate)]"
+        let fileName = "log[\(currentDate)].log"
         url.appendPathComponent(fileName)
         
         try compiledLogs.write(toFile: url.path, atomically: true, encoding: .utf8)
@@ -273,8 +273,11 @@ extension Logger {
 
 
 // /MARK: Log Function
-public func LOG(_ items: Any...,   separator: String = " ", terminator: String = "", level: Logger.LogLevel = Logger.LoggerConfig.defaultConfig.defaultLevel,
-         complexity: Logger.LogComplexity = Logger.LoggerConfig.defaultConfig.defaultComplexity,
-         file: String = #file, line: UInt = #line, function: String = #function) {
+public func LOG(_ items: Any...,
+                separator: String = " ",
+                terminator: String = "",
+                level: Logger.LogLevel = Logger.LoggerConfig.defaultConfig.defaultLevel,
+                complexity: Logger.LogComplexity = Logger.LoggerConfig.defaultConfig.defaultComplexity,
+                file: String = #file, line: UInt = #line, function: String = #function) {
     Logger.shared.log(Logger.LogItem(creationData: Date(), items: items, separator: separator, terminator: terminator, level: level, complexity: complexity, file: file, line: line, function: function))
 }

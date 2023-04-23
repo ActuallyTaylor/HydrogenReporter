@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="/assets/icon.png" alt="Hydrogen Reporter Logo" width="128" maxHeight=“128" />
+    <img src="./assets/icon.png" alt="Hydrogen Reporter Logo" width="128" maxHeight=“128" />
 </p>
 
 <p align="center">
@@ -15,10 +15,11 @@ A fast and lightweight SwiftUI console and view state reporter that can be used 
 ## Features
 - View and debug SwiftUI view state during app execution with no computer
 - Debug custom types with a simple extension
-- View logs as they get sent to the console
 - View current device statistics such as Ram and CPU usage
 - Add custom debug views to the reporter view
 - Only active during Debug sessions so no need to worry about removing for production!
+- View custom logs as they get sent to the console
+- View console output in app without the need for a connected debugger.
 
 ### Export Logs
 An example exported log!
@@ -57,7 +58,7 @@ https://github.com/ActuallyTaylor/HydrogenReporter
 #### Initialization
 To get started first import `HydrogenReporter` and then add the `.hydrogenReporter()` view modifier to your main view. This will initalize the reporter and add the floating menu to your app.
 
-```
+```swift
 import HydrogenReporter
 
 struct SampleApp: App {
@@ -74,7 +75,7 @@ struct SampleApp: App {
 To add your custom view to the reporter menu you just need to add the `.debuggable(self, id: "ID")` modifier to any view. This will register it with the reporter and allow you to view it's debuggable properties!
 
 This sample adds the following Sample View to the reporter with the tag of Main View
-```
+```swift
 struct SampleView: View {
     @State var string: String = "Hello World"
 
@@ -112,7 +113,7 @@ struct SampleView: View {
 #### Adding custom views to the reporter's menus
 If you have custom needs for what you want to appear in the reporter (A custom debug menu) you can easily make Hydrogen take care of this view by adding it by registering it using the `.customDebuggableView()` modifier!. Just provide the view and then an ID to identify the view.
 
-```
+```swift
 struct SampleView: View {
     @State var string: String = "Hello World"
 
@@ -132,6 +133,27 @@ struct SampleView: View {
         }
     }
 }
+```
+
+### Logger
+The Hydrogen Logger has the ability to swizzle the actual console output of your app and display it inside of the Hydrogen Reporter. This allows you to view console output as it happens without the need to switch away from print statements.
+
+If you wish to see output within the `Logger` portion of Hydrogen reporter you can switch all (or some) of your `print` statements with `LOG`. `LOG` internally uses the same functions as `print` so the output will be nearly identical.
+
+I would recommend moving your `print` statements to `LOG` statements as they allow for you to set their awareness level and see a more comprehensive
+
+#### Using the logger
+To use the logger you can call the function `LOG` for example:
+
+```swift
+// Log a simple message
+LOG("Completed Setup")
+
+// Log an Error
+LOG("Purchasing Error:", error, level: .error)
+
+// Debug Information
+LOG("Passed section 3", level: .debug)
 ```
 
 # Contact
