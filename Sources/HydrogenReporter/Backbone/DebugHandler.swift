@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+@MainActor
 class DebugHandler: ObservableObject {
     enum DebugTab: Identifiable, Equatable {
         public var id: String { title }
@@ -72,6 +73,14 @@ class DebugHandler: ObservableObject {
         return currentTabIndex != 0
     }
     
+    func getPreviousTab() -> DebugTab? {
+        if hasPreviousTab() {
+            return debugTabs[currentTabIndex - 1]
+        } else {
+            return nil
+        }
+    }
+    
     func previousTab() {
         if currentTabIndex != 0 {
             currentTabIndex -= 1
@@ -80,6 +89,14 @@ class DebugHandler: ObservableObject {
     
     func hasNextTab() -> Bool {
         return currentTabIndex != debugTabs.count - 1
+    }
+    
+    func getNextTab() -> DebugTab? {
+        if hasNextTab() {
+            return debugTabs[currentTabIndex + 1]
+        } else {
+            return nil
+        }
     }
     
     func nextTab() {

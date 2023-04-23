@@ -42,8 +42,8 @@ public class Logger: ObservableObject {
     public struct LoggerConfig: Codable {
         let applicationName: String
         
-        let defaultLevel: LogLevel
-        let defaultComplexity: LogComplexity
+        public let defaultLevel: LogLevel
+        public let defaultComplexity: LogComplexity
         let leadingEmoji: String
         let locale: String
         let timezone: String
@@ -60,7 +60,7 @@ public class Logger: ObservableObject {
             return formatter
         }
         
-        static let defaultConfig: LoggerConfig =  .init(applicationName: "Swifty Debug", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️", locale: "en_US", timezone: "utc", dateFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: 100000)
+        public static let defaultConfig: LoggerConfig =  .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️", locale: "en_US", timezone: "utc", dateFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: 100000)
     }
     
     public struct LogItem: Codable, CustomStringConvertible, Identifiable {
@@ -126,7 +126,7 @@ public class Logger: ObservableObject {
         }
     }
     
-    private func dumpToFile() throws {
+    func dumpToFile() throws -> URL {
         let currentDate = config.dateFormatter().string(from: Date())
         var compiledLogs: String = "\(config.applicationName) logs for \(currentDate)\n"
         
@@ -157,25 +157,29 @@ public class Logger: ObservableObject {
         compiledLogs.append("- Debug % \(totalDebugLogs / totalLogs) ")
         compiledLogs.append("---\n")
         
-        compiledLogs.append("=== START LOGS ===")
+        compiledLogs.append("=== START LOGS ===\n")
 
         compiledLogs.append(logs.compactMap({$0.complexDescription}).joined(separator: "\n"))
                 
-        compiledLogs.append("=== END LOGS ===")
+        compiledLogs.append("\n=== END LOGS ===")
 
         var url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("logs", isDirectory: true)
+
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: [:])
+
         let fileName = "log[\(currentDate)]"
         url.appendPathComponent(fileName)
         
         try compiledLogs.write(toFile: url.path, atomically: true, encoding: .utf8)
+        
+        return url
     }
 }
 
 
 
 // /MARK: Log Function
-func LOG(_ items: String...,
+public func LOG(_ items: String...,
          level: Logger.LogLevel = Logger.LoggerConfig.defaultConfig.defaultLevel,
          complexity: Logger.LogComplexity = Logger.LoggerConfig.defaultConfig.defaultComplexity,
          file: String = #file, line: UInt = #line, function: String = #function) {

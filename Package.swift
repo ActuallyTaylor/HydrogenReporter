@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "HydrogenReporter",
     platforms: [
-        .iOS(.v15),
+        .iOS(.v16),
         .macOS(.v10_15)
     ],
     products: [

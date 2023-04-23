@@ -17,11 +17,13 @@ struct MirrorView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading) {
-            ForEach(reflectedVariables, id: \.label) { variable in
-                buildValueLabel(label: variable.label, value: variable.value)
+        ScrollView {
+            VStack(alignment: .leading) {
+                ForEach(reflectedVariables, id: \.label) { variable in
+                    buildValueLabel(label: variable.label, value: variable.value)
+                }
+                Spacer()
             }
-            Spacer()
         }
     }
     
