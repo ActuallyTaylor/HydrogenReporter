@@ -67,6 +67,22 @@ public class Logger: ObservableObject {
         let dateFormat: String
         
         let historyLength: Int
+        let sendHydrogenLogsToReporterConsole: Bool
+        
+        public static let defaultConfig: LoggerConfig =  .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️", locale: "en_US", timezone: "utc", dateFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: 100000, sendHydrogenLogsToReporterConsole: false)
+
+        public init(applicationName: String, defaultLevel: LogLevel, defaultComplexity: LogComplexity, leadingEmoji: String, locale: String = "en_US", timezone: String = "en_US", dateFormat: String = "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: Int = 100000, sendHydrogenLogsToReporterConsole: Bool = true) {
+            self.applicationName = applicationName
+            self.defaultLevel = defaultLevel
+            self.defaultComplexity = defaultComplexity
+            self.leadingEmoji = leadingEmoji
+            self.locale = locale
+            self.timezone = timezone
+            self.dateFormat = dateFormat
+            self.historyLength = historyLength
+            self.sendHydrogenLogsToReporterConsole = sendHydrogenLogsToReporterConsole
+        }
+        
         
         func dateFormatter() -> DateFormatter {
             let formatter = DateFormatter()
@@ -76,8 +92,6 @@ public class Logger: ObservableObject {
             formatter.dateFormat = dateFormat
             return formatter
         }
-        
-        public static let defaultConfig: LoggerConfig =  .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️", locale: "en_US", timezone: "utc", dateFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: 100000)
     }
     
     public struct LogItem: CustomStringConvertible, Identifiable {
@@ -125,58 +139,56 @@ public class Logger: ObservableObject {
     }
     
     // MARK: - Singleton
-    static let shared = Logger()
+    public static let shared = Logger()
 
     private var config: LoggerConfig = .defaultConfig
     
     @Published var logs: [LogItem] = []
     var consolePipe = Pipe()
     @Published var consoleOutput: String = ""
-
-    init() {
-        setupStdoutIntercept()
-    }
+    var isInterceptingConsoleOutput: Bool = false
     
-    deinit {
-        consolePipe.fileHandleForWriting.closeFile()
+    init() {
+        
+        setupStdoutIntercept()
     }
         
     func log(_ item: LogItem) {
-        appendLog(log: item)
-        
         switch item.level {
         case .fatal:
             let desc = item.complexDescription
-            consoleOutput.append(desc)
+            appendLog(log: item, description: desc)
             os_log(.fault, "%{public}s", desc)
             Swift.fatalError(item.complexDescription)
         case .error:
             let desc = item.description
-            consoleOutput.append(desc)
+            appendLog(log: item, description: desc)
             os_log(.error, "%{public}s", desc)
         case .warn, .working, .success:
             let desc = item.description
-            consoleOutput.append(desc)
+            appendLog(log: item, description: desc)
             os_log(.default, "%{public}s", desc)
         case .info:
             let desc = item.description
-            consoleOutput.append(desc)
+            appendLog(log: item, description: desc)
             os_log(.info, "%{public}s", desc)
         case .debug:
             let desc = item.description
-            consoleOutput.append(desc)
+            appendLog(log: item, description: desc)
             os_log(.debug, "%{public}s", desc)
         }
-        consoleOutput.append("\n")
     }
         
-    private func appendLog(log: LogItem) {
+    private func appendLog(log: LogItem, description: String) {
         DispatchQueue.main.async {
             self.logs.append(log)
             
             if self.logs.count > self.config.historyLength {
                 self.logs.removeFirst()
             }
+            
+            self.consoleOutput.append(description)
+            self.consoleOutput.append("\n")
         }
     }
     
@@ -184,6 +196,7 @@ public class Logger: ObservableObject {
     /// https://phatbl.at/2019/01/08/intercepting-stdout-in-swift.html
     /// Set up an intercept for the Stdout which redirects it here to then be printed to the console visible to Hydrogen
     private func setupStdoutIntercept() {
+        isInterceptingConsoleOutput = true
         dup2(consolePipe.fileHandleForWriting.fileDescriptor, FileHandle.standardOutput.fileDescriptor)
         
         consolePipe.fileHandleForReading.waitForDataInBackgroundAndNotify()

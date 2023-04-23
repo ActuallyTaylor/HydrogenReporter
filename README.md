@@ -161,5 +161,18 @@ LOG("Purchasing Error:", error, level: .error)
 LOG("Passed section 3", level: .debug)
 ```
 
+## Reporter Screenshots
+### Logger
+![Screenshot of the Logger](./assets/logger.png)
+
+### View Inspector
+![Screenshot of the Inspector](./assets/inspector.jpeg)
+
+### Statistics View
+![Screenshot of the Logger](./assets/statistics.png)
+
+### Console
+![Screenshot of the Console](./assets/console.png)
+
 # Contact
 Any questions that you have can be directed towards the GitHub issues or my [Mastodon account](https://mastodon.social/@TaylorLineman)!
