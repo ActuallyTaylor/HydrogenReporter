@@ -46,7 +46,7 @@ struct SampleView: View {
         .hydrogenReporter()
         .debuggable(self, id: "Main View")
         .debuggable(viewModel, id: "Model Publisher")
-        .customDebuggableView(id: "Custom View", view: customView)
+        .customDebuggableView(customView, id: "Custom View")
     }
     
     var customView: some View {

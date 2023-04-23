@@ -23,8 +23,8 @@ public extension View {
         return self
     }
     
-    @MainActor func customDebuggableView(id: String, view: some View) -> some View {
-        DebugHandler.shared.registerCustomDebugView(id: id, view: AnyView(view))
+    @MainActor func customDebuggableView(_ target: some View, id: String) -> some View {
+        DebugHandler.shared.registerCustomDebugView(id: id, view: AnyView(target))
         return self
     }
 }
