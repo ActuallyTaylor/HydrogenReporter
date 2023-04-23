@@ -163,15 +163,22 @@ LOG("Passed section 3", level: .debug)
 
 ## Reporter Screenshots
 ### Logger
+The logger view shows all of the logs that have been logged with `LOG`. Totals and percentages are also shown so you can see the overall statistics of your logs.
+
 ![Screenshot of the Logger](./assets/logger.png)
 
 ### View Inspector
+The view inspector shows all of the state variables for an inspected view. They are shown side by side with their values.
+
 ![Screenshot of the Inspector](./assets/inspector.jpeg)
 
 ### Statistics View
+A screenshot of the device statistics page that shows you information about the currently running device. This screen is currently WIP.
 ![Screenshot of the Logger](./assets/statistics.png)
 
 ### Console
+A screenshot of the console when activated from the reporter view. Console logs from both Swift and your app are shown here.
+
 ![Screenshot of the Console](./assets/console.png)
 
 # Contact
