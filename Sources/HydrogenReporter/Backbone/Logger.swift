@@ -38,6 +38,23 @@ public class Logger: ObservableObject {
         case complex
     }
     
+    // MARK: Logger text output for using print
+    public struct LoggerOutputStream: TextOutputStream {
+        private var content: String
+        
+        init(prefix: String) {
+            content = prefix + " "
+        }
+        
+        public mutating func write(_ string: String) {
+            content.append(string)
+        }
+        
+        public func retrieveContent() -> String {
+            return content
+        }
+    }
+    
     // MARK: Logger Config
     public struct LoggerConfig: Codable {
         let applicationName: String
@@ -63,11 +80,14 @@ public class Logger: ObservableObject {
         public static let defaultConfig: LoggerConfig =  .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️", locale: "en_US", timezone: "utc", dateFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: 100000)
     }
     
-    public struct LogItem: Codable, CustomStringConvertible, Identifiable {
+    public struct LogItem: CustomStringConvertible, Identifiable {
         public var id: UUID = UUID()
         
         let creationData: Date
-        let items: [String]
+        let items: [Any]
+        let separator: String
+        let terminator: String
+        
         let level: LogLevel
         let complexity: LogComplexity
         
@@ -89,13 +109,18 @@ public class Logger: ObservableObject {
         }
         
         var simpleDescription: String {
-            let joinedArray: String = items.joined(separator:", ")
-            return "\(emoji) \(joinedArray)"
+            var outputStream: LoggerOutputStream = LoggerOutputStream(prefix: emoji)
+            print(items, separator: separator, terminator: terminator, to: &outputStream)
+            
+            return outputStream.retrieveContent()
         }
-        
+
         var complexDescription: String {
-            let joinedArray: String = items.joined(separator:", ")
-            return "\(emoji) \(joinedArray) - \(file) @ line \(line), in function \(function)"
+            var outputStream: LoggerOutputStream = LoggerOutputStream(prefix: emoji)
+            print(items, separator: separator, to: &outputStream)
+            outputStream.write(" - \(file) @ line \(line), in function \(function)")
+            
+            return outputStream.retrieveContent()
         }
     }
     
@@ -105,24 +130,73 @@ public class Logger: ObservableObject {
     private var config: LoggerConfig = .defaultConfig
     
     @Published var logs: [LogItem] = []
+    var consolePipe = Pipe()
+    @Published var consoleOutput: String = ""
+
+    init() {
+        setupStdoutIntercept()
+    }
+    
+    deinit {
+        consolePipe.fileHandleForWriting.closeFile()
+    }
         
     func log(_ item: LogItem) {
         appendLog(log: item)
-        if item.level != .fatal {
-            // Non-fatal Flaw so check complexity
-            os_log("%{public}s", item.description)
-        } else {
-            // Fatal Fail
-            os_log("%{public}s", item.complexDescription)
+        
+        switch item.level {
+        case .fatal:
+            let desc = item.complexDescription
+            consoleOutput.append(desc)
+            os_log(.fault, "%{public}s", desc)
             Swift.fatalError(item.complexDescription)
+        case .error:
+            let desc = item.description
+            consoleOutput.append(desc)
+            os_log(.error, "%{public}s", desc)
+        case .warn, .working, .success:
+            let desc = item.description
+            consoleOutput.append(desc)
+            os_log(.default, "%{public}s", desc)
+        case .info:
+            let desc = item.description
+            consoleOutput.append(desc)
+            os_log(.info, "%{public}s", desc)
+        case .debug:
+            let desc = item.description
+            consoleOutput.append(desc)
+            os_log(.debug, "%{public}s", desc)
+        }
+        consoleOutput.append("\n")
+    }
+        
+    private func appendLog(log: LogItem) {
+        DispatchQueue.main.async {
+            self.logs.append(log)
+            
+            if self.logs.count > self.config.historyLength {
+                self.logs.removeFirst()
+            }
         }
     }
     
-    private func appendLog(log: LogItem) {
-        logs.append(log)
+    /// https://stackoverflow.com/a/63208455/14886210
+    /// https://phatbl.at/2019/01/08/intercepting-stdout-in-swift.html
+    /// Set up an intercept for the Stdout which redirects it here to then be printed to the console visible to Hydrogen
+    private func setupStdoutIntercept() {
+        dup2(consolePipe.fileHandleForWriting.fileDescriptor, FileHandle.standardOutput.fileDescriptor)
         
-        if logs.count > config.historyLength {
-            logs.removeFirst()
+        consolePipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: consolePipe.fileHandleForReading , queue: nil) { notification in
+            let output = self.consolePipe.fileHandleForReading.availableData
+            let outputString = String(data: output, encoding: String.Encoding.utf8) ?? ""
+            
+            DispatchQueue.main.async {
+                self.consoleOutput += outputString
+            }
+            
+            self.consolePipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
         }
     }
     
@@ -163,6 +237,10 @@ public class Logger: ObservableObject {
         compiledLogs.append(logs.compactMap({$0.complexDescription}).joined(separator: "\n"))
                 
         compiledLogs.append("\n=== END LOGS ===")
+        
+        compiledLogs.append("\n=== RAW CONSOLE ===")
+        compiledLogs.append(consoleOutput)
+        compiledLogs.append("\n=== END RAW CONSOLE ===")
 
         var url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("logs", isDirectory: true)
 
@@ -181,12 +259,22 @@ public class Logger: ObservableObject {
     }
 }
 
+// MARK: Getter's and Setters
+extension Logger {
+    public func setLoggerConfig(config: LoggerConfig) {
+        self.config = config
+    }
+    
+    public func getLoggerConfig() -> LoggerConfig {
+        return config
+    }
+}
+
 
 
 // /MARK: Log Function
-public func LOG(_ items: String...,
-         level: Logger.LogLevel = Logger.LoggerConfig.defaultConfig.defaultLevel,
+public func LOG(_ items: Any...,   separator: String = " ", terminator: String = "", level: Logger.LogLevel = Logger.LoggerConfig.defaultConfig.defaultLevel,
          complexity: Logger.LogComplexity = Logger.LoggerConfig.defaultConfig.defaultComplexity,
          file: String = #file, line: UInt = #line, function: String = #function) {
-    Logger.shared.log(Logger.LogItem(creationData: Date(), items: items, level: level, complexity: complexity, file: file, line: line, function: function))
+    Logger.shared.log(Logger.LogItem(creationData: Date(), items: items, separator: separator, terminator: terminator, level: level, complexity: complexity, file: file, line: line, function: function))
 }

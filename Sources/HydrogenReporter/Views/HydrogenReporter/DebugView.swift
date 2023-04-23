@@ -22,6 +22,7 @@ struct DebugView: View {
     @State var buttonPosition: CGPoint? = nil
     @State var showingReporter: Bool = false
     @StateObject var debugHandler: DebugHandler = .shared
+    @StateObject var logger: Logger = .shared
     
     var body: some View {
         if Config.isDebug {
@@ -57,18 +58,21 @@ struct DebugView: View {
                             Text(debugHandler.debugTabs[debugHandler.currentTabIndex].title)
                                 .font(.headline)
                         }
-                        .background(.ultraThickMaterial)
                         .zIndex(10)
                         Group {
                             switch debugHandler.debugTabs[debugHandler.currentTabIndex] {
-                            case .console:
-                                Console()
+                            case .logger:
+                                LoggerView()
+                                    .environmentObject(logger)
                             case .mirror(_ , let mirror):
                                 MirrorView(mirror: mirror)
                             case .customView(_, let view):
                                 view
                             case .statistics:
                                 StatisticsView()
+                            case .console:
+                                Console()
+                                    .environmentObject(logger)
                             }
                         }
                         .frame(height: height)
@@ -78,7 +82,7 @@ struct DebugView: View {
                     }
                     .padding(10)
                     .addBorder(Color.accentColor.opacity(0.5), width: 1, cornerRadius: 7)
-                    .background(.ultraThickMaterial)
+                    .background(.ultraThinMaterial)
                     .padding(10)
                 }
             }

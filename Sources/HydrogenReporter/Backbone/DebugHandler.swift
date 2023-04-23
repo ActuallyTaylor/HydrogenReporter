@@ -13,21 +13,24 @@ class DebugHandler: ObservableObject {
     enum DebugTab: Identifiable, Equatable {
         public var id: String { title }
         
-        case console
+        case logger
         case statistics
         case mirror(id: String, mirror: Mirror)
         case customView(id: String, view: AnyView)
+        case console
         
         var title: String {
             switch self {
-            case .console:
-                return "Console"
+            case .logger:
+                return "Logger"
             case .statistics:
                 return "Statistics"
             case .mirror(let id, _):
                 return id
             case .customView(let id, _):
                 return id
+            case .console:
+                return "Console"
             }
         }
         
@@ -36,7 +39,7 @@ class DebugHandler: ObservableObject {
         }
     }
     
-    @Published var debugTabs: [DebugTab] = [.statistics, .console]
+    @Published var debugTabs: [DebugTab] = [.statistics, .logger, .console]
     @Published var currentTabIndex: Int = 1
     
     public static let shared = DebugHandler()
