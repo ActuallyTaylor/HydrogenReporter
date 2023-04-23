@@ -14,9 +14,11 @@ A SwiftIU based console and view state reporter that can be used to see active l
 
 ## Features
 - View and debug SwiftUI view state during app execution with no computer
+- Debug custom types with a simple extension
 - View logs as they get sent to the console
 - View current device statistics such as Ram and CPU usage
 - Add custom debug views to the reporter view
+- Only active during Debug sessions so no need to worry about removing for production!
 
 ### Export Logs
 An example exported log!
@@ -43,3 +45,92 @@ Hydrogen Reporter logs for 2023-04-23T15:22:07.650-04:00
 ✅ Web Socket did connect - ~/StreamingManager.swift @ line 384, in function urlSession(_:webSocketTask:didOpenWithProtocol:)
 === END LOGS ===
 ```
+
+## Getting Started
+### Swift Package Manager
+Add the following url to your Swift Packages through Xcode
+```
+https://github.com/ActuallyTaylor/HydrogenReporter
+```
+
+### Sample Code
+#### Initialization
+To get started first import `HydrogenReporter` and then add the `.hydrogenReporter()` view modifier to your main view. This will initalize the reporter and add the floating menu to your app.
+
+```
+import HydrogenReporter
+
+struct SampleApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .hydrogenReporter()
+        }
+    }
+}
+```
+
+#### Adding a SwiftUI view to the reporter
+To add your custom view to the reporter menu you just need to add the `.debuggable(self, id: "ID")` modifier to any view. This will register it with the reporter and allow you to view it's debuggable properties!
+
+This sample adds the following Sample View to the reporter with the tag of Main View
+```
+struct SampleView: View {
+    @State var string: String = "Hello World"
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                TextField("Text", text: $string)
+                    .textFieldStyle(.roundedBorder)
+
+                Button("Log Error") {
+                    LOG("You just broke everything", level: .error)
+                }
+                Button("Log Warning") {
+                    LOG("You should not have done that", level: .warn)
+                }
+                Button("Log Info") {
+                    LOG("Chilling", level: .info)
+                }
+                Button("Log Success") {
+                    LOG("That worked!", level: .success)
+                }
+                Button("Log Working") {
+                    LOG("Working on something...", level: .working)
+                }
+                Button("Log Debug") {
+                    LOG("Print Debugging is where it is at", level: .debug)
+                }
+            }
+        }
+        .debuggable(self, id: "Main View")
+    }
+}
+```
+
+#### Adding custom views to the reporter's menus
+If you have custom needs for what you want to appear in the reporter (A custom debug menu) you can easily make Hydrogen take care of this view by adding it by registering it using the `.customDebuggableView()` modifier!. Just provide the view and then an ID to identify the view.
+
+```
+struct SampleView: View {
+    @State var string: String = "Hello World"
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                TextField("Text", text: $string)
+                    .textFieldStyle(.roundedBorder)
+        }
+        .customDebuggableView(customView, id: "Custom View")
+    }
+    
+    var customView: some View {
+        VStack {
+            Text("A Custom View!")
+            Text("Some State \(string)")
+        }
+    }
+}
+```
+
