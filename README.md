@@ -64,7 +64,7 @@ import HydrogenReporter
 struct SampleApp: App {
 
     init() {
-            Logger.shared.setLoggerConfig(config: .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️"))
+        Logger.shared.setLoggerConfig(config: .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️"))
     }
 
     var body: some Scene {
