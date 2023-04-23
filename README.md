@@ -10,7 +10,7 @@
 </p>
 
 # Hydrogen Reporter
-A SwiftIU based console and view state reporter that can be used to see active logs and system statistics.
+A fast and lightweight SwiftUI console and view state reporter that can be used to see active logs and system statistics. Extremely useful for on the go debugging or when your apps need to be debugged over long periods of times that you can't be connected to a computer for!
 
 ## Features
 - View and debug SwiftUI view state during app execution with no computer
