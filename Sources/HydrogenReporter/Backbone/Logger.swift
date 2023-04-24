@@ -231,7 +231,7 @@ public class Logger: ObservableObject {
         compiledLogs.append("--- ✨ Total Logs: \(logs.count) ---\n")
         compiledLogs.append("--- \(LogLevel.fatal.emoji()) Total Fatal Error Logs: \(totalFatalLogs) ---\n")
         compiledLogs.append("--- \(LogLevel.error.emoji()) Total Error Logs: \(totalErrorLogs) ---\n")
-        compiledLogs.append("--- \(LogLevel.warn.emoji()) Total Warn Logs: \(totalErrorLogs) ---\n")
+        compiledLogs.append("--- \(LogLevel.warn.emoji()) Total Warn Logs: \(totalWarnLogs) ---\n")
         compiledLogs.append("--- \(LogLevel.info.emoji()) Total Info Logs: \(totalInfoLogs) ---\n")
         compiledLogs.append("--- \(LogLevel.success.emoji()) Total Success Logs: \(totalSuccessLogs) ---\n")
         compiledLogs.append("--- \(LogLevel.working.emoji()) Total Working Logs: \(totalWorkingLogs) ---\n")
