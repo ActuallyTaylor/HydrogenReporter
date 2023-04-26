@@ -9,6 +9,9 @@ import SwiftUI
 
 // MARK: Swifty Debug
 struct DebugView: View {
+    @StateObject var debugHandler: DebugHandler = .shared
+    @StateObject var logger: Logger = .shared
+
     @State var height: CGFloat = 200 {
         didSet {
             if height < 0 {
@@ -18,14 +21,13 @@ struct DebugView: View {
     }
     
     @State var startedDragging: Date? = nil
-//    @State var prediction: CGPoint = .zero
     @State var buttonPosition: CGPoint? = nil
+    
     @State var showingReporter: Bool = false
-    @StateObject var debugHandler: DebugHandler = .shared
-    @StateObject var logger: Logger = .shared
+    @State var showingSelf: Bool = true
     
     var body: some View {
-        if Config.isDebug {
+        if Config.isDebug && showingSelf {
             internalBody
         } else {
             EmptyView()
@@ -103,6 +105,13 @@ struct DebugView: View {
                 } label: {
                     Label("Export Console Logs", systemImage: "square.and.arrow.up.trianglebadge.exclamationmark")
                 }
+                
+                Button(role: .destructive) {
+                    showingSelf.toggle()
+                } label: {
+                    Label("Close Hydrogen Menu", systemImage: "xmark")
+                }
+
             } label: {
                 Label("Menu", systemImage: "menucard.fill")
                     .font(.title2)
