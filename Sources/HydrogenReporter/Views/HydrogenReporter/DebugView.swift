@@ -92,6 +92,7 @@ struct DebugView: View {
                 } label: {
                     Label("\(showingReporter ? "Close" : "Open") Reporter", systemImage: "exclamationmark.bubble.fill")
                 }
+
                 Button {
                     do {
                         try shareLog()

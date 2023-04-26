@@ -68,11 +68,10 @@ public class Logger: ObservableObject {
         
         let historyLength: Int
         let sendHydrogenLogsToReporterConsole: Bool
-        let hijackConsoleOnBoot: Bool
         
         public static let defaultConfig: LoggerConfig =  .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️")
 
-        public init(applicationName: String, defaultLevel: LogLevel, defaultComplexity: LogComplexity, leadingEmoji: String, hijackConsoleOnBoot: Bool = true, locale: String = "en_US", timezone: String = "en_US", dateFormat: String = "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: Int = 100000, sendHydrogenLogsToReporterConsole: Bool = true) {
+        public init(applicationName: String, defaultLevel: LogLevel, defaultComplexity: LogComplexity, leadingEmoji: String, locale: String = "en_US", timezone: String = "en_US", dateFormat: String = "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: Int = 100000, sendHydrogenLogsToReporterConsole: Bool = true) {
             self.applicationName = applicationName
             self.defaultLevel = defaultLevel
             self.defaultComplexity = defaultComplexity
@@ -82,7 +81,6 @@ public class Logger: ObservableObject {
             self.dateFormat = dateFormat
             self.historyLength = historyLength
             self.sendHydrogenLogsToReporterConsole = sendHydrogenLogsToReporterConsole
-            self.hijackConsoleOnBoot = hijackConsoleOnBoot
         }
         
         
@@ -156,9 +154,7 @@ public class Logger: ObservableObject {
     
     init() {
         originalSTDOUTDescriptor = FileHandle.standardOutput.fileDescriptor
-        if config.hijackConsoleOnBoot {
-            hijackConsole()
-        }
+        hijackConsole()
     }
         
     func log(_ item: LogItem) {
@@ -229,7 +225,7 @@ public class Logger: ObservableObject {
         
         print("Completed Console Hijack - Welcome to the Hydrogen Console 👋")
     }
-        
+
     func dumpToFile() throws -> URL {
         let currentDate = config.dateFormatter().string(from: Date())
         var compiledLogs: String = "\(config.applicationName) logs for \(currentDate)\n"
