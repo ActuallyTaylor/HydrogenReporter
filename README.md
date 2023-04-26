@@ -161,6 +161,14 @@ LOG("Purchasing Error:", error, level: .error)
 LOG("Passed section 3", level: .debug)
 ```
 
+## Console
+Hydrogen has a built in console that can mirror the Standard Error and the Standard Output files! This allows you to view the exact same console output that you would be able to in XCode. When Hydrogen first starts up, you will see the following output in your console informing you that Hydrogen has succesfully inserted itself into the console!
+
+```
+Starting Console Hijack...
+Completed Console Hijack - Welcome to the Hydrogen Console 👋
+```
+
 ## Reporter Screenshots
 ### Logger
 The logger view shows all of the logs that have been logged with `LOG`. Totals and percentages are also shown so you can see the overall statistics of your logs.
