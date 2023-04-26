@@ -70,9 +70,9 @@ public class Logger: ObservableObject {
         let sendHydrogenLogsToReporterConsole: Bool
         let hijackConsoleOnBoot: Bool
         
-        public static let defaultConfig: LoggerConfig =  .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️", hijackConsoleOnBoot: true, locale: "en_US", timezone: "utc", dateFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: 100000, sendHydrogenLogsToReporterConsole: false)
+        public static let defaultConfig: LoggerConfig =  .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️")
 
-        public init(applicationName: String, defaultLevel: LogLevel, defaultComplexity: LogComplexity, leadingEmoji: String, hijackConsoleOnBoot: Bool, locale: String = "en_US", timezone: String = "en_US", dateFormat: String = "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: Int = 100000, sendHydrogenLogsToReporterConsole: Bool = true) {
+        public init(applicationName: String, defaultLevel: LogLevel, defaultComplexity: LogComplexity, leadingEmoji: String, hijackConsoleOnBoot: Bool = true, locale: String = "en_US", timezone: String = "en_US", dateFormat: String = "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: Int = 100000, sendHydrogenLogsToReporterConsole: Bool = true) {
             self.applicationName = applicationName
             self.defaultLevel = defaultLevel
             self.defaultComplexity = defaultComplexity
