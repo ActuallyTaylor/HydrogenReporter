@@ -86,17 +86,12 @@ struct DebugView: View {
                     .padding(10)
                 }
             }
-//            Rectangle()
-//                .frame(width: 25, height: 25)
-//                .foregroundColor(.red)
-//                .position(prediction)
             Menu {
                 Button {
                     showingReporter.toggle()
                 } label: {
                     Label("\(showingReporter ? "Close" : "Open") Reporter", systemImage: "exclamationmark.bubble.fill")
                 }
-
                 Button {
                     do {
                         try shareLog()

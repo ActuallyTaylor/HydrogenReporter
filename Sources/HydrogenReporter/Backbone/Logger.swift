@@ -68,10 +68,11 @@ public class Logger: ObservableObject {
         
         let historyLength: Int
         let sendHydrogenLogsToReporterConsole: Bool
+        let hijackConsoleOnBoot: Bool
         
-        public static let defaultConfig: LoggerConfig =  .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️", locale: "en_US", timezone: "utc", dateFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: 100000, sendHydrogenLogsToReporterConsole: false)
+        public static let defaultConfig: LoggerConfig =  .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️", hijackConsoleOnBoot: true, locale: "en_US", timezone: "utc", dateFormat: "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: 100000, sendHydrogenLogsToReporterConsole: false)
 
-        public init(applicationName: String, defaultLevel: LogLevel, defaultComplexity: LogComplexity, leadingEmoji: String, locale: String = "en_US", timezone: String = "en_US", dateFormat: String = "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: Int = 100000, sendHydrogenLogsToReporterConsole: Bool = true) {
+        public init(applicationName: String, defaultLevel: LogLevel, defaultComplexity: LogComplexity, leadingEmoji: String, hijackConsoleOnBoot: Bool, locale: String = "en_US", timezone: String = "en_US", dateFormat: String = "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: Int = 100000, sendHydrogenLogsToReporterConsole: Bool = true) {
             self.applicationName = applicationName
             self.defaultLevel = defaultLevel
             self.defaultComplexity = defaultComplexity
@@ -81,6 +82,7 @@ public class Logger: ObservableObject {
             self.dateFormat = dateFormat
             self.historyLength = historyLength
             self.sendHydrogenLogsToReporterConsole = sendHydrogenLogsToReporterConsole
+            self.hijackConsoleOnBoot = hijackConsoleOnBoot
         }
         
         
@@ -142,15 +144,21 @@ public class Logger: ObservableObject {
     public static let shared = Logger()
 
     private var config: LoggerConfig = .defaultConfig
+    internal var originalSTDOUTDescriptor: Int32
     
     @Published var logs: [LogItem] = []
-    var consolePipe = Pipe()
+    var consoleInputPipe = Pipe()
+    var consoleOutputPipe = Pipe()
+
     @Published var consoleOutput: String = ""
     var isInterceptingConsoleOutput: Bool = false
     
+    
     init() {
-        
-        setupStdoutIntercept()
+        originalSTDOUTDescriptor = FileHandle.standardOutput.fileDescriptor
+        if config.hijackConsoleOnBoot {
+            hijackConsole()
+        }
     }
         
     func log(_ item: LogItem) {
@@ -195,24 +203,33 @@ public class Logger: ObservableObject {
     /// https://stackoverflow.com/a/63208455/14886210
     /// https://phatbl.at/2019/01/08/intercepting-stdout-in-swift.html
     /// Set up an intercept for the Stdout which redirects it here to then be printed to the console visible to Hydrogen
-    private func setupStdoutIntercept() {
+    public func hijackConsole() {
+        print("Starting Console Hijack...")
         isInterceptingConsoleOutput = true
-        dup2(consolePipe.fileHandleForWriting.fileDescriptor, FileHandle.standardOutput.fileDescriptor)
         
-        consolePipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+        // Copy STDOUT file descriptor to outputPipe for writing strings back to STDOUT
+        dup2(originalSTDOUTDescriptor, consoleOutputPipe.fileHandleForWriting.fileDescriptor)
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: consolePipe.fileHandleForReading , queue: nil) { notification in
-            let output = self.consolePipe.fileHandleForReading.availableData
+        // Intercept STDOUT with inputPipe
+        dup2(consoleInputPipe.fileHandleForWriting.fileDescriptor, originalSTDOUTDescriptor)
+        
+        consoleInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+        
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: consoleInputPipe.fileHandleForReading , queue: nil) { notification in
+            let output = self.consoleInputPipe.fileHandleForReading.availableData
             let outputString = String(data: output, encoding: String.Encoding.utf8) ?? ""
             
             DispatchQueue.main.async {
                 self.consoleOutput += outputString
             }
             
-            self.consolePipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+            self.consoleOutputPipe.fileHandleForWriting.write(output)
+            self.consoleInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
         }
+        
+        print("Completed Console Hijack - Welcome to the Hydrogen Console 👋")
     }
-    
+        
     func dumpToFile() throws -> URL {
         let currentDate = config.dateFormatter().string(from: Date())
         var compiledLogs: String = "\(config.applicationName) logs for \(currentDate)\n"
