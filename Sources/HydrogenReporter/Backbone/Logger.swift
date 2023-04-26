@@ -142,18 +142,28 @@ public class Logger: ObservableObject {
     public static let shared = Logger()
 
     private var config: LoggerConfig = .defaultConfig
-    internal var originalSTDOUTDescriptor: Int32
-    
+
     @Published var logs: [LogItem] = []
-    var consoleInputPipe = Pipe()
-    var consoleOutputPipe = Pipe()
+    
+    // MARK: Console Intercepting
+    internal var originalSTDOUTDescriptor: Int32
+    internal var originalSTDERRDescriptor: Int32
+
+    internal let stdoutInputPipe = Pipe()
+    internal let stdoutOutputPipe = Pipe()
+   
+    internal let stderrInputPipe = Pipe()
+    internal let stderrOutputPipe = Pipe()
 
     @Published var consoleOutput: String = ""
+    @Published var stdout: String = ""
+    @Published var stderr: String = ""
+
     var isInterceptingConsoleOutput: Bool = false
-    
-    
+
     init() {
         originalSTDOUTDescriptor = FileHandle.standardOutput.fileDescriptor
+        originalSTDERRDescriptor = FileHandle.standardError.fileDescriptor
         hijackConsole()
     }
         
@@ -191,8 +201,8 @@ public class Logger: ObservableObject {
                 self.logs.removeFirst()
             }
             
-            self.consoleOutput.append(description)
-            self.consoleOutput.append("\n")
+            self.stdout.append(description)
+            self.stdout.append("\n")
         }
     }
     
@@ -203,26 +213,50 @@ public class Logger: ObservableObject {
         print("Starting Console Hijack...")
         isInterceptingConsoleOutput = true
         
+        // MARK: STDOUT Intercepting
         // Copy STDOUT file descriptor to outputPipe for writing strings back to STDOUT
-        dup2(originalSTDOUTDescriptor, consoleOutputPipe.fileHandleForWriting.fileDescriptor)
+        dup2(originalSTDOUTDescriptor, stdoutOutputPipe.fileHandleForWriting.fileDescriptor)
 
         // Intercept STDOUT with inputPipe
-        dup2(consoleInputPipe.fileHandleForWriting.fileDescriptor, originalSTDOUTDescriptor)
+        dup2(stdoutInputPipe.fileHandleForWriting.fileDescriptor, originalSTDOUTDescriptor)
         
-        consoleInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+        stdoutInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
         
-        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: consoleInputPipe.fileHandleForReading , queue: nil) { notification in
-            let output = self.consoleInputPipe.fileHandleForReading.availableData
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: stdoutInputPipe.fileHandleForReading , queue: nil) { notification in
+            let output = self.stdoutInputPipe.fileHandleForReading.availableData
             let outputString = String(data: output, encoding: String.Encoding.utf8) ?? ""
             
             DispatchQueue.main.async {
                 self.consoleOutput += outputString
+                self.stdout += outputString
             }
             
-            self.consoleOutputPipe.fileHandleForWriting.write(output)
-            self.consoleInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+            self.stdoutOutputPipe.fileHandleForWriting.write(output)
+            self.stdoutInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
         }
         
+        // MARK: STDERR Intercepting
+        // Copy STDOUT file descriptor to outputPipe for writing strings back to STDOUT
+        dup2(originalSTDERRDescriptor, stderrOutputPipe.fileHandleForWriting.fileDescriptor)
+
+        // Intercept STDOUT with inputPipe
+        dup2(stderrInputPipe.fileHandleForWriting.fileDescriptor, originalSTDERRDescriptor)
+        
+        stderrInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+        
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: stderrInputPipe.fileHandleForReading , queue: nil) { notification in
+            let output = self.stderrInputPipe.fileHandleForReading.availableData
+            let outputString = String(data: output, encoding: String.Encoding.utf8) ?? ""
+            
+            DispatchQueue.main.async {
+                self.consoleOutput += outputString
+                self.stderr += outputString
+            }
+            
+            self.stderrOutputPipe.fileHandleForWriting.write(output)
+            self.stderrInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+        }
+
         print("Completed Console Hijack - Welcome to the Hydrogen Console 👋")
     }
 

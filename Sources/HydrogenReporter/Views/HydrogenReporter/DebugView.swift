@@ -83,6 +83,7 @@ struct DebugView: View {
                     .padding(10)
                     .addBorder(Color.accentColor.opacity(0.5), width: 1, cornerRadius: 7)
                     .background(.ultraThinMaterial)
+                    .cornerRadius(7)
                     .padding(10)
                 }
             }

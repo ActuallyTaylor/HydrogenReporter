@@ -24,6 +24,9 @@ struct LoggerView: View {
                     .onChange(of: logger.logs.count) { _ in
                         reader.scrollTo(logger.logs.last?.id)
                     }
+                    .onAppear {
+                        reader.scrollTo(logger.logs.last?.id)
+                    }
                 }
             }
         }
