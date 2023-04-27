@@ -260,7 +260,7 @@ public class Logger: ObservableObject {
         print("Completed Console Hijack - Welcome to the Hydrogen Console 👋")
     }
 
-    func dumpToFile() throws -> URL {
+    public func dumpToFile() throws -> URL {
         let currentDate = config.dateFormatter().string(from: Date())
         var compiledLogs: String = "\(config.applicationName) logs for \(currentDate)\n"
         
