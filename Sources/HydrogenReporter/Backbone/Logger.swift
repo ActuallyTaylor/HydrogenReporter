@@ -201,6 +201,8 @@ public class Logger: ObservableObject {
                 self.logs.removeFirst()
             }
             
+            self.consoleOutput.append(description)
+            self.consoleOutput.append("\n")
             self.stdout.append(description)
             self.stdout.append("\n")
         }
@@ -298,7 +300,7 @@ public class Logger: ObservableObject {
                 
         compiledLogs.append("\n=== END LOGS ===")
         
-        compiledLogs.append("\n=== RAW CONSOLE ===")
+        compiledLogs.append("\n=== RAW CONSOLE ===\n")
         compiledLogs.append(consoleOutput)
         compiledLogs.append("\n=== END RAW CONSOLE ===")
 
