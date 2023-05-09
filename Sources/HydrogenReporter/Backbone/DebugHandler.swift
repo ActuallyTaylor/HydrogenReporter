@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 @MainActor
-class DebugHandler: ObservableObject {
+public class DebugHandler: ObservableObject {
     enum DebugTab: Identifiable, Equatable {
         public var id: String { title }
         
@@ -59,7 +59,7 @@ class DebugHandler: ObservableObject {
         debugTabs.append(.customView(id: id, view: view))
     }
     
-    func registerMirror(id: String, mirror: Mirror) {
+    public func registerMirror(id: String, mirror: Mirror) {
         debugTabs.removeAll { tab in
             switch tab {
             case .mirror(let tabID, _):
