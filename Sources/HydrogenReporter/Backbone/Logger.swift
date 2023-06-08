@@ -109,6 +109,8 @@ public class Logger: ObservableObject {
         let line: UInt
         let function: String
         
+        let leader: String
+        
         var emoji: String {
             return level.emoji()
         }
@@ -341,5 +343,5 @@ public func LOG(_ items: Any...,
                 level: Logger.LogLevel = Logger.LoggerConfig.defaultConfig.defaultLevel,
                 complexity: Logger.LogComplexity = Logger.LoggerConfig.defaultConfig.defaultComplexity,
                 file: String = #file, line: UInt = #line, function: String = #function) {
-    Logger.shared.log(Logger.LogItem(creationData: Date(), items: items, separator: separator, terminator: terminator, level: level, complexity: complexity, file: file, line: line, function: function))
+    Logger.shared.log(Logger.LogItem(creationData: Date(), items: items, separator: separator, terminator: terminator, level: level, complexity: complexity, file: file, line: line, function: function, leader: Logger.shared.getLoggerConfig().leadingEmoji))
 }
