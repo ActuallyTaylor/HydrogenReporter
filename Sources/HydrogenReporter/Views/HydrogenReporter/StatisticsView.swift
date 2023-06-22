@@ -141,8 +141,8 @@ struct StatisticsView: View {
             return "Car Play"
         case .mac:
             return "Mac"
-        default:
-            return "Vision OS (xrOS / RealityOS)"
+//        default:
+//            return "Vision OS (xrOS / RealityOS)"
         @unknown default:
             return "Invalid"
         }
