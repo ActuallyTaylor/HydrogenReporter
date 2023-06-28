@@ -203,7 +203,7 @@ struct DebugView: View {
     
     @discardableResult
     func shareLog() throws -> Bool {
-        guard let source = UIApplication.shared.windows.last?.rootViewController else {
+        guard let source = UIApplication.shared.keyWindow?.rootViewController else {
             return false
         }
         

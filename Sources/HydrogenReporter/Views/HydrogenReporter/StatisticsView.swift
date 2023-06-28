@@ -44,11 +44,8 @@ struct StatisticsView: View {
             RowView(label: "Device Name", data: UIDevice.modelName, onTapData: UIDevice.current.model)
             RowView(label: "System Bane", data: UIDevice.current.systemName)
             RowView(label: "System Version", data: UIDevice.current.systemVersion)
-            #if os(xrOS)
-            #else
             RowView(label: "Orientation", data: parseOrientation(UIDevice.current.orientation))
             RowView(label: "In Valid Orientation", data: "\(UIDevice.current.orientation.isValidInterfaceOrientation)")
-            #endif
             RowView(label: "Multitasking Supported", data: "\(UIDevice.current.isMultitaskingSupported)")
             RowView(label: "Interface Idiom", data: parseInterfaceIdiom(UIDevice.current.userInterfaceIdiom))
         }
