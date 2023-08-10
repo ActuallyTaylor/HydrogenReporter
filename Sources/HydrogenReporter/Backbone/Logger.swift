@@ -31,7 +31,7 @@ public class Logger: ObservableObject {
             }
         }
     }
-
+    
     // MARK: Logger Complexity
     public enum LogComplexity: String, Codable {
         case simple
@@ -70,7 +70,7 @@ public class Logger: ObservableObject {
         let sendHydrogenLogsToReporterConsole: Bool
         
         public static let defaultConfig: LoggerConfig =  .init(applicationName: "Hydrogen Reporter", defaultLevel: .info, defaultComplexity: .simple, leadingEmoji: "⚫️")
-
+        
         public init(applicationName: String, defaultLevel: LogLevel, defaultComplexity: LogComplexity, leadingEmoji: String, locale: String = "en_US", timezone: String = "en_US", dateFormat: String = "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX", historyLength: Int = 100000, sendHydrogenLogsToReporterConsole: Bool = true) {
             self.applicationName = applicationName
             self.defaultLevel = defaultLevel
@@ -130,7 +130,7 @@ public class Logger: ObservableObject {
             
             return outputStream.retrieveContent()
         }
-
+        
         var complexDescription: String {
             var outputStream: LoggerOutputStream = LoggerOutputStream(prefix: emoji)
             print(items, separator: separator, to: &outputStream)
@@ -142,33 +142,33 @@ public class Logger: ObservableObject {
     
     // MARK: - Singleton
     public static let shared = Logger()
-
+    
     private var config: LoggerConfig = .defaultConfig
-
+    
     @Published var logs: [LogItem] = []
     
     // MARK: Console Intercepting
     internal var originalSTDOUTDescriptor: Int32
     internal var originalSTDERRDescriptor: Int32
-
+    
     internal let stdoutInputPipe = Pipe()
     internal let stdoutOutputPipe = Pipe()
-   
+    
     internal let stderrInputPipe = Pipe()
     internal let stderrOutputPipe = Pipe()
-
+    
     @Published var consoleOutput: String = ""
     @Published var stdout: String = ""
     @Published var stderr: String = ""
-
+    
     var isInterceptingConsoleOutput: Bool = false
-
+    
     init() {
         originalSTDOUTDescriptor = FileHandle.standardOutput.fileDescriptor
         originalSTDERRDescriptor = FileHandle.standardError.fileDescriptor
         hijackConsole()
     }
-        
+    
     func log(_ item: LogItem) {
         switch item.level {
         case .fatal:
@@ -194,7 +194,7 @@ public class Logger: ObservableObject {
             os_log(.debug, "%{public}s", desc)
         }
     }
-        
+    
     private func appendLog(log: LogItem, description: String) {
         DispatchQueue.main.async {
             self.logs.append(log)
@@ -210,6 +210,11 @@ public class Logger: ObservableObject {
         }
     }
     
+    /// New Implementation from Michael Allman and his work in https://github.com/mallman/HydrogenBomb/blob/master/HydrogenBomb/Logger.swift
+    /// An issue was raised where the logger would block the main thread, the above is the solution to this.
+    /// Issue in question: https://github.com/ActuallyTaylor/HydrogenReporter/issues/1
+    ///
+    /// Original Resource
     /// https://stackoverflow.com/a/63208455/14886210
     /// https://phatbl.at/2019/01/08/intercepting-stdout-in-swift.html
     /// Set up an intercept for the Stdout which redirects it here to then be printed to the console visible to Hydrogen
@@ -220,50 +225,62 @@ public class Logger: ObservableObject {
         // MARK: STDOUT Intercepting
         // Copy STDOUT file descriptor to outputPipe for writing strings back to STDOUT
         dup2(originalSTDOUTDescriptor, stdoutOutputPipe.fileHandleForWriting.fileDescriptor)
-
+        
         // Intercept STDOUT with inputPipe
         dup2(stdoutInputPipe.fileHandleForWriting.fileDescriptor, originalSTDOUTDescriptor)
-        
-        stdoutInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
-        
-        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: stdoutInputPipe.fileHandleForReading , queue: nil) { notification in
-            let output = self.stdoutInputPipe.fileHandleForReading.availableData
-            let outputString = String(data: output, encoding: String.Encoding.utf8) ?? ""
-            
-            DispatchQueue.main.async {
-                self.consoleOutput += outputString
-                self.stdout += outputString
-            }
-            
-            self.stdoutOutputPipe.fileHandleForWriting.write(output)
-            self.stdoutInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
-        }
         
         // MARK: STDERR Intercepting
         // Copy STDOUT file descriptor to outputPipe for writing strings back to STDOUT
         dup2(originalSTDERRDescriptor, stderrOutputPipe.fileHandleForWriting.fileDescriptor)
-
+        
         // Intercept STDOUT with inputPipe
         dup2(stderrInputPipe.fileHandleForWriting.fileDescriptor, originalSTDERRDescriptor)
         
-        stderrInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
-        
-        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: stderrInputPipe.fileHandleForReading , queue: nil) { notification in
-            let output = self.stderrInputPipe.fileHandleForReading.availableData
-            let outputString = String(data: output, encoding: String.Encoding.utf8) ?? ""
+        // MARK: Thread based reading and writing
+        // Decouple reading from writing by reading on a separate thread
+        // This ensures that writing to stdout/stderr does not block while we wait
+        // to read from it (on the same thread!)
+        let ioThread = Thread { [unowned self] in
+            stdoutInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
             
-            DispatchQueue.main.async {
-                self.consoleOutput += outputString
-                self.stderr += outputString
+            NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: stdoutInputPipe.fileHandleForReading , queue: nil) { notification in
+                let output = self.stdoutInputPipe.fileHandleForReading.availableData
+                let outputString = String(data: output, encoding: String.Encoding.utf8) ?? ""
+                
+                DispatchQueue.main.async {
+                    self.consoleOutput += outputString
+                    self.stdout += outputString
+                }
+                
+                self.stdoutOutputPipe.fileHandleForWriting.write(output)
+                self.stdoutInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
             }
             
-            self.stderrOutputPipe.fileHandleForWriting.write(output)
-            self.stderrInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+            stderrInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+            
+            NotificationCenter.default.addObserver(forName: NSNotification.Name.NSFileHandleDataAvailable, object: stderrInputPipe.fileHandleForReading , queue: nil) { notification in
+                let output = self.stderrInputPipe.fileHandleForReading.availableData
+                let outputString = String(data: output, encoding: String.Encoding.utf8) ?? ""
+                
+                DispatchQueue.main.async {
+                    self.consoleOutput += outputString
+                    self.stderr += outputString
+                }
+                
+                self.stderrOutputPipe.fileHandleForWriting.write(output)
+                self.stderrInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+            }
+            // We need to add and run a runloop to this thread to ensure it doesn't exit immediately
+            // Also, the documentation for asynchronous reading from FileHandle states that
+            // asynchronous reads must be performed from a thread with a runloop
+            RunLoop.current.run()
         }
-
+        
+        ioThread.start()
+        
         print("Completed Console Hijack - Welcome to the Hydrogen Console 👋")
     }
-
+    
     public func dumpToFile() throws -> URL {
         let currentDate = config.dateFormatter().string(from: Date())
         var compiledLogs: String = "\(config.applicationName) logs for \(currentDate)\n"
@@ -276,7 +293,7 @@ public class Logger: ObservableObject {
         let totalSuccessLogs = logs.filter({$0.level == .success}).count
         let totalWorkingLogs = logs.filter({$0.level == .working}).count
         let totalDebugLogs = logs.filter({$0.level == .debug}).count
-
+        
         let newTotalLogs = totalLogs == 0 ? 1 : totalLogs
         // Statistics Data to be logged at the top of the file
         compiledLogs.append("--- ✨ Total Logs: \(logs.count) ---\n")
@@ -297,19 +314,19 @@ public class Logger: ObservableObject {
         compiledLogs.append("---\n")
         
         compiledLogs.append("=== START LOGS ===\n")
-
+        
         compiledLogs.append(logs.compactMap({$0.complexDescription}).joined(separator: "\n"))
-                
+        
         compiledLogs.append("\n=== END LOGS ===")
         
         compiledLogs.append("\n=== RAW CONSOLE ===\n")
         compiledLogs.append(consoleOutput)
         compiledLogs.append("\n=== END RAW CONSOLE ===")
-
+        
         var url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("logs", isDirectory: true)
-
+        
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: [:])
-
+        
         let fileName = "log[\(currentDate)].log"
         url.appendPathComponent(fileName)
         
@@ -317,7 +334,7 @@ public class Logger: ObservableObject {
         
         return url
     }
-
+    
     func getPercent(value: Int, divisor: Int) -> String {
         return String(format: "%.2f", (Double(value) / Double(divisor)))
     }
