@@ -4,7 +4,7 @@
 //
 //  Created by Taylor Lineman on 4/20/23.
 //
-
+#if canImport(UIKit)
 import SwiftUI
 
 struct StatisticsView: View {
@@ -151,3 +151,4 @@ struct StatisticsView_Previews: PreviewProvider {
         StatisticsView()
     }
 }
+#endif

@@ -57,7 +57,6 @@ public struct Config {
     }
     
     static var appAppearance: AppAppearance {
-        #if canImport(UIKit)
         if UITraitCollection.current.userInterfaceStyle == .dark {
             return .dark
         } else if UITraitCollection.current.userInterfaceStyle == .light {
@@ -65,8 +64,5 @@ public struct Config {
         } else {
             return .light
         }
-        #elseif canImport(AppKit)
-        return NSApplication.shared.isDarkmode() ? .dark : .light
-        #endif
     }
 }

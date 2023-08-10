@@ -71,7 +71,11 @@ struct DebugView: View {
                             case .customView(_, let view):
                                 view
                             case .statistics:
+                                #if canImport(UIKit)
                                 StatisticsView()
+                                #else
+                                Text("Statistics View Not Available on macOS")
+                                #endif
                             case .console:
                                 Console()
                                     .environmentObject(logger)
@@ -98,7 +102,9 @@ struct DebugView: View {
 
                 Button {
                     do {
+                        #if canImport(UIKit)
                         try shareLog()
+                        #endif
                     } catch {
                         LOG("Failed to share log \(error)", level: .error)
                     }
@@ -200,7 +206,7 @@ struct DebugView: View {
             }
     }
 
-    
+    #if canImport(UIKit)
     @discardableResult
     func shareLog() throws -> Bool {
         guard let source = UIApplication.shared.keyWindow?.rootViewController else {
@@ -213,11 +219,13 @@ struct DebugView: View {
             activityItems: [logFile],
             applicationActivities: nil
         )
+        
 
         vc.popoverPresentationController?.sourceView = source.view
         source.present(vc, animated: true)
         return true
     }
+    #endif
 
 }
 

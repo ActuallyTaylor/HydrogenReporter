@@ -1,10 +1,4 @@
-//
-//  UIDevice.swift
-//  
-//
-//  Created by Taylor Lineman on 4/20/23.
-//
-
+#if canImport(UIKit)
 import Foundation
 import UIKit
 import MachO
@@ -319,3 +313,4 @@ public extension UIDevice {
         return mapToDevice(identifier: identifier)
     }()
 }
+#endif

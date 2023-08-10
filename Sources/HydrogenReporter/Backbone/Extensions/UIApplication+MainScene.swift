@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import UIKit
 
 /// https://stackoverflow.com/a/68989580/14886210
@@ -20,4 +21,4 @@ extension UIApplication {
             .first(where: \.isKeyWindow)
     }
 }
-
+#endif

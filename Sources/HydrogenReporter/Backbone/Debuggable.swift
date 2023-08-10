@@ -186,7 +186,7 @@ extension Swift.AnyIterator: Debuggable {
 
 extension Swift.AnyKeyPath: Debuggable {
     var swiftyDebugDescription: String {
-        if #available(iOS 16.4, *) {
+        if #available(iOS 16.4, *), #available(macOS 13.3, *) {
             return self.debugDescription
         } else {
             return "\(self)"
