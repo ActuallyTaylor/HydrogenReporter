@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import HydrogenReporter
 
 // MARK: Swifty Debug
+@available(macOS 12.0, *)
 struct DebugView: View {
     @StateObject var debugHandler: DebugHandler = .shared
     @StateObject var logger: Logger = .shared
@@ -229,7 +231,7 @@ struct DebugView: View {
 
 }
 
-
+@available(macOS 12.0, *)
 struct DebugView_Previews: PreviewProvider {
     static var previews: some View {
         DebugView()

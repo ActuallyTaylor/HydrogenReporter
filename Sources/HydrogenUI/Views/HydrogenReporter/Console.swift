@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import HydrogenReporter
 
 struct Console: View {
     enum OutputMode {

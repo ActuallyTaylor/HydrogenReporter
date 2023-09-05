@@ -102,7 +102,7 @@ public class Logger: ObservableObject {
         let separator: String
         let terminator: String
         
-        let level: LogLevel
+        public let level: LogLevel
         let complexity: LogComplexity
         
         let file: String
@@ -145,7 +145,7 @@ public class Logger: ObservableObject {
     
     private var config: LoggerConfig = .defaultConfig
     
-    @Published var logs: [LogItem] = []
+    @Published public var logs: [LogItem] = []
     
     // MARK: Console Intercepting
     internal var originalSTDOUTDescriptor: Int32
@@ -157,9 +157,9 @@ public class Logger: ObservableObject {
     internal let stderrInputPipe = Pipe()
     internal let stderrOutputPipe = Pipe()
     
-    @Published var consoleOutput: String = ""
-    @Published var stdout: String = ""
-    @Published var stderr: String = ""
+    @Published public var consoleOutput: String = ""
+    @Published public var stdout: String = ""
+    @Published public var stderr: String = ""
     
     var isInterceptingConsoleOutput: Bool = false
     
@@ -350,8 +350,6 @@ extension Logger {
         return config
     }
 }
-
-
 
 // /MARK: Log Function
 public func LOG(_ items: Any...,

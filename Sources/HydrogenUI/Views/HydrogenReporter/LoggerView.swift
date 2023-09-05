@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import HydrogenReporter
 
 struct LoggerView: View {
     @EnvironmentObject var logger: Logger

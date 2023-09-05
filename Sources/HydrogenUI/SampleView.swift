@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import HydrogenReporter
 
 class SampleViewModel: ObservableObject, Debuggable {
     var swiftyDebugDescription: String = "Hello"
@@ -13,6 +14,7 @@ class SampleViewModel: ObservableObject, Debuggable {
     @Published var test: String = "Hello Publisher"
 }
 
+@available(macOS 12.0, *)
 struct SampleView: View {
     @StateObject var viewModel: SampleViewModel = SampleViewModel()
     @State var string: String = "Hello World"
@@ -57,6 +59,7 @@ struct SampleView: View {
     }
 }
 
+@available(macOS 12.0, *)
 struct SampleView_Previews: PreviewProvider {
     static var previews: some View {
         SampleView()
