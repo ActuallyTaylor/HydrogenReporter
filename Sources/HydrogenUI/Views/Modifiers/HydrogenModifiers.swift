@@ -7,12 +7,14 @@
 
 import SwiftUI
 
+@available(macOS 12.0, *)
 struct HydrogenReporterModifier: ViewModifier {
     func body(content: Content) -> some View {
         content.overlay(DebugView())
     }
 }
 
+@available(macOS 12.0, *)
 public extension View {
     func hydrogenReporter() -> some View {
         return self.modifier(HydrogenReporterModifier())

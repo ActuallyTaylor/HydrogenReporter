@@ -2,6 +2,7 @@
 import Foundation
 import UIKit
 import MachO
+import HydrogenReporter
 
 public extension UIDevice {
     
