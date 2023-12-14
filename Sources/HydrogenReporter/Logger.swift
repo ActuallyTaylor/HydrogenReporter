@@ -189,9 +189,11 @@ public class Logger: ObservableObject {
             appendLog(log: item, description: desc)
             os_log(.info, "%{public}s", desc)
         case .debug:
+            #if DEBUG
             let desc = item.description
             appendLog(log: item, description: desc)
             os_log(.debug, "%{public}s", desc)
+            #endif
         }
     }
     
