@@ -125,16 +125,20 @@ public class Logger: ObservableObject {
         }
         
         var simpleDescription: String {
-            var outputStream: LoggerOutputStream = LoggerOutputStream(prefix: emoji)
+            var outputStream: LoggerOutputStream = LoggerOutputStream(prefix: "\(Logger.shared.config.leadingEmoji) \(emoji)")
             print(items, separator: separator, terminator: terminator, to: &outputStream)
             
             return outputStream.retrieveContent()
         }
         
         var complexDescription: String {
-            var outputStream: LoggerOutputStream = LoggerOutputStream(prefix: emoji)
+            var outputStream: LoggerOutputStream = LoggerOutputStream(prefix: "\(Logger.shared.config.leadingEmoji) \(emoji)")
             print(items, separator: separator, to: &outputStream)
+            #if DEBUG
             outputStream.write(" - \(file) @ line \(line), in function \(function)")
+            #else
+            outputStream.write(" - @ line \(line), in function \(function)")
+            #endif
             
             return outputStream.retrieveContent()
         }
@@ -143,7 +147,7 @@ public class Logger: ObservableObject {
     // MARK: - Singleton
     public static let shared = Logger()
     
-    private var config: LoggerConfig = .defaultConfig
+    fileprivate var config: LoggerConfig = .defaultConfig
     
     @Published public var logs: [LogItem] = []
     
@@ -357,8 +361,8 @@ extension Logger {
 public func LOG(_ items: Any...,
                 separator: String = " ",
                 terminator: String = "",
-                level: Logger.LogLevel = Logger.LoggerConfig.defaultConfig.defaultLevel,
-                complexity: Logger.LogComplexity = Logger.LoggerConfig.defaultConfig.defaultComplexity,
+                level: Logger.LogLevel = Logger.shared.getLoggerConfig().defaultLevel,
+                complexity: Logger.LogComplexity = Logger.shared.getLoggerConfig().defaultComplexity,
                 file: String = #file, line: UInt = #line, function: String = #function) {
     Logger.shared.log(Logger.LogItem(creationData: Date(), items: items, separator: separator, terminator: terminator, level: level, complexity: complexity, file: file, line: line, function: function, leader: Logger.shared.getLoggerConfig().leadingEmoji))
 }
