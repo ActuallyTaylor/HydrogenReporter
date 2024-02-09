@@ -287,7 +287,7 @@ public class Logger: ObservableObject {
         print("Completed Console Hijack - Welcome to the Hydrogen Console 👋")
     }
     
-    public func dumpToFile() throws -> URL {
+    public func dumpToText() -> String {
         let currentDate = config.dateFormatter().string(from: Date())
         var compiledLogs: String = "\(config.applicationName) logs for \(currentDate)\n"
         
@@ -328,6 +328,13 @@ public class Logger: ObservableObject {
         compiledLogs.append("\n=== RAW CONSOLE ===\n")
         compiledLogs.append(consoleOutput)
         compiledLogs.append("\n=== END RAW CONSOLE ===")
+
+        return compiledLogs
+    }
+    
+    public func dumpToFile() throws -> URL {
+        let currentDate = config.dateFormatter().string(from: Date())
+        let compiledLogs = dumpToText()
         
         var url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("logs", isDirectory: true)
         
