@@ -8,7 +8,7 @@
 import Foundation
 import os
 
-public class Logger: ObservableObject {
+public class Logger: NSObject {
     // MARK: Supporting Structures
     public enum LogLevel: String, Codable {
         case fatal
@@ -149,7 +149,12 @@ public class Logger: ObservableObject {
     
     fileprivate var config: LoggerConfig = .defaultConfig
     
-    @Published public var logs: [LogItem] = []
+    public var logs: [LogItem] = [] {
+        didSet {
+            logCounter = logs.count
+        }
+    }
+    @objc dynamic public var logCounter: Int = 0
     
     // MARK: Console Intercepting
     internal var originalSTDOUTDescriptor: Int32
@@ -161,15 +166,17 @@ public class Logger: ObservableObject {
     internal let stderrInputPipe = Pipe()
     internal let stderrOutputPipe = Pipe()
     
-    @Published public var consoleOutput: String = ""
-    @Published public var stdout: String = ""
-    @Published public var stderr: String = ""
+    @objc dynamic public var consoleOutput: String = ""
+    @objc dynamic public var stdout: String = ""
+    @objc dynamic public var stderr: String = ""
     
     var isInterceptingConsoleOutput: Bool = false
     
-    init() {
+    override init() {
         originalSTDOUTDescriptor = FileHandle.standardOutput.fileDescriptor
         originalSTDERRDescriptor = FileHandle.standardError.fileDescriptor
+        super.init()
+        
         hijackConsole()
     }
     
@@ -202,18 +209,16 @@ public class Logger: ObservableObject {
     }
     
     private func appendLog(log: LogItem, description: String) {
-        DispatchQueue.main.async {
-            self.logs.append(log)
-            
-            if self.logs.count > self.config.historyLength {
-                self.logs.removeFirst()
-            }
-            
-            self.consoleOutput.append(description)
-            self.consoleOutput.append("\n")
-            self.stdout.append(description)
-            self.stdout.append("\n")
+        self.logs.append(log)
+        
+        if self.logs.count > self.config.historyLength {
+            self.logs.removeFirst()
         }
+        
+        self.consoleOutput.append(description)
+        self.consoleOutput.append("\n")
+        self.stdout.append(description)
+        self.stdout.append("\n")
     }
     
     /// New Implementation from Michael Allman and his work in https://github.com/mallman/HydrogenBomb/blob/master/HydrogenBomb/Logger.swift
@@ -253,11 +258,9 @@ public class Logger: ObservableObject {
                 let output = self.stdoutInputPipe.fileHandleForReading.availableData
                 let outputString = String(data: output, encoding: String.Encoding.utf8) ?? ""
                 
-                DispatchQueue.main.async {
-                    self.consoleOutput += outputString
-                    self.stdout += outputString
-                }
-                
+                self.consoleOutput += outputString
+                self.stdout += outputString
+
                 self.stdoutOutputPipe.fileHandleForWriting.write(output)
                 self.stdoutInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
             }
@@ -268,11 +271,9 @@ public class Logger: ObservableObject {
                 let output = self.stderrInputPipe.fileHandleForReading.availableData
                 let outputString = String(data: output, encoding: String.Encoding.utf8) ?? ""
                 
-                DispatchQueue.main.async {
-                    self.consoleOutput += outputString
-                    self.stderr += outputString
-                }
-                
+                self.consoleOutput += outputString
+                self.stderr += outputString
+
                 self.stderrOutputPipe.fileHandleForWriting.write(output)
                 self.stderrInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
             }

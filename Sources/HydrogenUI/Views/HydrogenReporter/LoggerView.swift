@@ -9,7 +9,7 @@ import SwiftUI
 import HydrogenReporter
 
 struct LoggerView: View {
-    @EnvironmentObject var logger: Logger
+    @EnvironmentObject var logger: ObservableLogger
     
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {

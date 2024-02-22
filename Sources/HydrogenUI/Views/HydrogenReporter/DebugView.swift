@@ -12,7 +12,7 @@ import HydrogenReporter
 @available(macOS 12.0, *)
 struct DebugView: View {
     @StateObject var debugHandler: DebugHandler = .shared
-    @StateObject var logger: Logger = .shared
+    @StateObject var logger: ObservableLogger = .shared
 
     @State var height: CGFloat = 200 {
         didSet {

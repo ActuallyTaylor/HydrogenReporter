@@ -15,7 +15,7 @@ struct Console: View {
         case stdout
     }
     
-    @EnvironmentObject var logger: Logger
+    @EnvironmentObject var logger: ObservableLogger
     @State var outputMode: OutputMode = .stdout
     
     var body: some View {
@@ -80,6 +80,6 @@ struct Console: View {
 struct Console_Previews: PreviewProvider {
     static var previews: some View {
         Console()
-            .environmentObject(Logger.shared)
+            .environmentObject(ObservableLogger.shared)
     }
 }
