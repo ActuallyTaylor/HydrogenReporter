@@ -215,6 +215,18 @@ public class Logger: NSObject {
             self.logs.removeFirst()
         }
         
+        if consoleOutput.count > self.config.historyLength {
+            consoleOutput.removeFirst()
+        }
+        
+        if stdout.count > self.config.historyLength {
+            stdout.removeFirst()
+        }
+        
+        if stderr.count > self.config.historyLength {
+            stderr.removeFirst()
+        }
+        
         self.consoleOutput.append(description)
         self.consoleOutput.append("\n")
         self.stdout.append(description)
