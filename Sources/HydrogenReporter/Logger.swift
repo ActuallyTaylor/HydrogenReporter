@@ -214,7 +214,16 @@ public class Logger: NSObject {
         if self.logs.count > self.config.historyLength {
             self.logs.removeFirst()
         }
+                
+        trimMemoryItems()
         
+        self.consoleOutput.append(description)
+        self.consoleOutput.append("\n")
+        self.stdout.append(description)
+        self.stdout.append("\n")
+    }
+    
+    private func trimMemoryItems() {
         if consoleOutput.count > self.config.historyLength {
             consoleOutput.removeFirst()
         }
@@ -226,11 +235,6 @@ public class Logger: NSObject {
         if stderr.count > self.config.historyLength {
             stderr.removeFirst()
         }
-        
-        self.consoleOutput.append(description)
-        self.consoleOutput.append("\n")
-        self.stdout.append(description)
-        self.stdout.append("\n")
     }
     
     /// New Implementation from Michael Allman and his work in https://github.com/mallman/HydrogenBomb/blob/master/HydrogenBomb/Logger.swift
@@ -273,6 +277,8 @@ public class Logger: NSObject {
                 self.consoleOutput += outputString
                 self.stdout += outputString
 
+                self.trimMemoryItems()
+
                 self.stdoutOutputPipe.fileHandleForWriting.write(output)
                 self.stdoutInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
             }
@@ -285,6 +291,8 @@ public class Logger: NSObject {
                 
                 self.consoleOutput += outputString
                 self.stderr += outputString
+
+                self.trimMemoryItems()
 
                 self.stderrOutputPipe.fileHandleForWriting.write(output)
                 self.stderrInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()

@@ -3,8 +3,12 @@ import XCTest
 
 final class HydrogenReporterTests: XCTestCase {
     func testMemoryUsage() throws {
-        for i in 0...100000 {
+        for i in 0...5000 {
             LOG("Hello World", i)
         }
+        for i in 0...5000 {
+            print("Hello World", i)
+        }
+
     }
 }
