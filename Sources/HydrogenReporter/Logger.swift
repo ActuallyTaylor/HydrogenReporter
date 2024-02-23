@@ -166,9 +166,9 @@ public class Logger: NSObject {
     internal let stderrInputPipe = Pipe()
     internal let stderrOutputPipe = Pipe()
     
-    public var consoleOutput: String = ""
-    public var stdout: String = ""
-    public var stderr: String = ""
+    @objc dynamic public var consoleOutput: String = ""
+    @objc dynamic public var stdout: String = ""
+    @objc dynamic public var stderr: String = ""
     
     var isInterceptingConsoleOutput: Bool = false
     
