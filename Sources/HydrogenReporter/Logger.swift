@@ -166,9 +166,9 @@ public class Logger: NSObject {
     internal let stderrInputPipe = Pipe()
     internal let stderrOutputPipe = Pipe()
     
-    @objc dynamic public var consoleOutput: String = ""
-    @objc dynamic public var stdout: String = ""
-    @objc dynamic public var stderr: String = ""
+    public var consoleOutput: String = ""
+    public var stdout: String = ""
+    public var stderr: String = ""
     
     var isInterceptingConsoleOutput: Bool = false
     
@@ -211,7 +211,7 @@ public class Logger: NSObject {
     private func appendLog(log: LogItem, description: String) {
         self.logs.append(log)
         
-        if self.logs.count > self.config.historyLength {
+        if self.logs.count > self.config.historyLength && !consoleOutput.isEmpty {
             self.logs.removeFirst()
         }
                 
