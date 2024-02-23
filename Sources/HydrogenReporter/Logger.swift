@@ -224,15 +224,15 @@ public class Logger: NSObject {
     }
     
     private func trimMemoryItems() {
-        if consoleOutput.count > self.config.historyLength {
+        if consoleOutput.count > self.config.historyLength && !consoleOutput.isEmpty {
             consoleOutput.removeFirst()
         }
         
-        if stdout.count > self.config.historyLength {
+        if stdout.count > self.config.historyLength && !stdout.isEmpty {
             stdout.removeFirst()
         }
         
-        if stderr.count > self.config.historyLength {
+        if stderr.count > self.config.historyLength && !stdout.isEmpty {
             stderr.removeFirst()
         }
     }
