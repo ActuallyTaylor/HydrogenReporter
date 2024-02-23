@@ -165,11 +165,7 @@ public class Logger: NSObject {
     
     internal let stderrInputPipe = Pipe()
     internal let stderrOutputPipe = Pipe()
-    
-    public var consoleOutput: String = ""
-    public var stdout: String = ""
-    public var stderr: String = ""
-    
+        
     var isInterceptingConsoleOutput: Bool = false
     
     private let consoleOutputQueue: DispatchQueue
@@ -218,22 +214,12 @@ public class Logger: NSObject {
     
     public init(consoleOutputQueue: DispatchQueue = DispatchQueue(label: "com.impel.consoleOutput", attributes: .concurrent)) {
         self.consoleOutputQueue = consoleOutputQueue
+        originalSTDOUTDescriptor = FileHandle.standardOutput.fileDescriptor
+        originalSTDERRDescriptor = FileHandle.standardError.fileDescriptor
         super.init()
-        setup()
-    }
-    
-    private func setup() {
-        originalSTDOUTDescriptor = FileHandle.standardOutput.fileDescriptor
-        originalSTDERRDescriptor = FileHandle.standardError.fileDescriptor
+        
         hijackConsole()
     }
-    
-    private func setup() {
-        originalSTDOUTDescriptor = FileHandle.standardOutput.fileDescriptor
-        originalSTDERRDescriptor = FileHandle.standardError.fileDescriptor
-        hijackConsole()
-    }
-    
     
     func log(_ item: LogItem) {
         switch item.level {
