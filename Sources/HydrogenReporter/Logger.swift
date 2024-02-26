@@ -1,6 +1,6 @@
 //
 //  Logger.swift
-//  
+//
 //
 //  Created by Taylor Lineman on 4/19/23.
 //
@@ -134,11 +134,11 @@ public class Logger: NSObject {
         var complexDescription: String {
             var outputStream: LoggerOutputStream = LoggerOutputStream(prefix: "\(Logger.shared.config.leadingEmoji) \(emoji)")
             print(items, separator: separator, to: &outputStream)
-            #if DEBUG
+#if DEBUG
             outputStream.write(" - \(file) @ line \(line), in function \(function)")
-            #else
+#else
             outputStream.write(" - @ line \(line), in function \(function)")
-            #endif
+#endif
             
             return outputStream.retrieveContent()
         }
@@ -151,9 +151,12 @@ public class Logger: NSObject {
     
     public var logs: [LogItem] = [] {
         didSet {
-            logCounter = logs.count
+            consoleOutputQueue.async(flags: .barrier) {
+                self.logCounter = self.logs.count
+            }
         }
     }
+    
     @objc dynamic public var logCounter: Int = 0
     
     // MARK: Console Intercepting
@@ -165,14 +168,55 @@ public class Logger: NSObject {
     
     internal let stderrInputPipe = Pipe()
     internal let stderrOutputPipe = Pipe()
-    
-    public var consoleOutput: String = ""
-    public var stdout: String = ""
-    public var stderr: String = ""
-    
+        
     var isInterceptingConsoleOutput: Bool = false
     
-    override init() {
+    private let consoleOutputQueue: DispatchQueue
+    private var _consoleOutput: String = ""
+    private var _stdout: String = ""
+    private var _stderr: String = ""
+    
+    public var consoleOutput: String {
+        get {
+            return consoleOutputQueue.sync {
+                return _consoleOutput
+            }
+        }
+        set {
+            consoleOutputQueue.async(flags: .barrier) {
+                self._consoleOutput = newValue
+            }
+        }
+    }
+    
+    public var stdout: String {
+            get {
+                return consoleOutputQueue.sync {
+                    return _stdout
+                }
+            }
+            set {
+                consoleOutputQueue.async(flags: .barrier) {
+                    self._stdout = newValue
+                }
+            }
+        }
+
+        public var stderr: String {
+            get {
+                return consoleOutputQueue.sync {
+                    return _stderr
+                }
+            }
+            set {
+                consoleOutputQueue.async(flags: .barrier) {
+                    self._stderr = newValue
+                }
+            }
+        }
+    
+    public init(consoleOutputQueue: DispatchQueue = DispatchQueue(label: "com.impel.consoleOutput", attributes: .concurrent)) {
+        self.consoleOutputQueue = consoleOutputQueue
         originalSTDOUTDescriptor = FileHandle.standardOutput.fileDescriptor
         originalSTDERRDescriptor = FileHandle.standardError.fileDescriptor
         super.init()
@@ -200,21 +244,25 @@ public class Logger: NSObject {
             appendLog(log: item, description: desc)
             os_log(.info, "%{public}s", desc)
         case .debug:
-            #if DEBUG
+#if DEBUG
             let desc = item.description
             appendLog(log: item, description: desc)
             os_log(.debug, "%{public}s", desc)
-            #endif
+#endif
         }
     }
     
     private func appendLog(log: LogItem, description: String) {
-        self.logs.append(log)
+        consoleOutputQueue.async(flags: .barrier) {
+            self.logs.append(log)
+        }
         
         if self.logs.count > self.config.historyLength && !consoleOutput.isEmpty {
-            self.logs.removeFirst()
+            consoleOutputQueue.async(flags: .barrier) {
+                self.logs.removeFirst()
+            }
         }
-                
+        
         trimMemoryItems()
         
         self.consoleOutput.append(description)
@@ -276,9 +324,9 @@ public class Logger: NSObject {
                 
                 self.consoleOutput += outputString
                 self.stdout += outputString
-
+                
                 self.trimMemoryItems()
-
+                
                 self.stdoutOutputPipe.fileHandleForWriting.write(output)
                 self.stdoutInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
             }
@@ -291,9 +339,9 @@ public class Logger: NSObject {
                 
                 self.consoleOutput += outputString
                 self.stderr += outputString
-
+                
                 self.trimMemoryItems()
-
+                
                 self.stderrOutputPipe.fileHandleForWriting.write(output)
                 self.stderrInputPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
             }
@@ -349,7 +397,7 @@ public class Logger: NSObject {
         compiledLogs.append("\n=== RAW CONSOLE ===\n")
         compiledLogs.append(consoleOutput)
         compiledLogs.append("\n=== END RAW CONSOLE ===")
-
+        
         return compiledLogs
     }
     
