@@ -168,13 +168,13 @@ public class Logger: NSObject {
     
     internal let stderrInputPipe = Pipe()
     internal let stderrOutputPipe = Pipe()
-        
+    
     var isInterceptingConsoleOutput: Bool = false
     
     private let consoleOutputQueue: DispatchQueue
-    private var _consoleOutput: String = ""
-    private var _stdout: String = ""
-    private var _stderr: String = ""
+    @objc dynamic internal var _consoleOutput: String = ""
+    @objc dynamic internal var _stdout: String = ""
+    @objc dynamic internal var _stderr: String = ""
     
     public var consoleOutput: String {
         get {
@@ -190,32 +190,32 @@ public class Logger: NSObject {
     }
     
     public var stdout: String {
-            get {
-                return consoleOutputQueue.sync {
-                    return _stdout
-                }
-            }
-            set {
-                consoleOutputQueue.async(flags: .barrier) {
-                    self._stdout = newValue
-                }
+        get {
+            return consoleOutputQueue.sync {
+                return _stdout
             }
         }
-
-        public var stderr: String {
-            get {
-                return consoleOutputQueue.sync {
-                    return _stderr
-                }
-            }
-            set {
-                consoleOutputQueue.async(flags: .barrier) {
-                    self._stderr = newValue
-                }
+        set {
+            consoleOutputQueue.async(flags: .barrier) {
+                self._stdout = newValue
             }
         }
+    }
     
-    public init(consoleOutputQueue: DispatchQueue = DispatchQueue(label: "com.impel.consoleOutput", attributes: .concurrent)) {
+    public var stderr: String {
+        get {
+            return consoleOutputQueue.sync {
+                return _stderr
+            }
+        }
+        set {
+            consoleOutputQueue.async(flags: .barrier) {
+                self._stderr = newValue
+            }
+        }
+    }
+    
+    public init(consoleOutputQueue: DispatchQueue = DispatchQueue(label: "com.hydrogen.reporter", attributes: .concurrent)) {
         self.consoleOutputQueue = consoleOutputQueue
         originalSTDOUTDescriptor = FileHandle.standardOutput.fileDescriptor
         originalSTDERRDescriptor = FileHandle.standardError.fileDescriptor
@@ -255,10 +255,8 @@ public class Logger: NSObject {
     private func appendLog(log: LogItem, description: String) {
         consoleOutputQueue.async(flags: .barrier) {
             self.logs.append(log)
-        }
-        
-        if self.logs.count > self.config.historyLength && !consoleOutput.isEmpty {
-            consoleOutputQueue.async(flags: .barrier) {
+            
+            if self.logs.count > self.config.historyLength && !self.consoleOutput.isEmpty {
                 self.logs.removeFirst()
             }
         }
