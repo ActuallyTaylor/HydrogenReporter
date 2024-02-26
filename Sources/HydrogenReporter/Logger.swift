@@ -151,9 +151,12 @@ public class Logger: NSObject {
     
     public var logs: [LogItem] = [] {
         didSet {
-            logCounter = logs.count
+            consoleOutputQueue.async(flags: .barrier) {
+                self.logCounter = self.logs.count
+            }
         }
     }
+    
     @objc dynamic public var logCounter: Int = 0
     
     // MARK: Console Intercepting
@@ -250,10 +253,14 @@ public class Logger: NSObject {
     }
     
     private func appendLog(log: LogItem, description: String) {
-        self.logs.append(log)
+        consoleOutputQueue.async(flags: .barrier) {
+            self.logs.append(log)
+        }
         
         if self.logs.count > self.config.historyLength && !consoleOutput.isEmpty {
-            self.logs.removeFirst()
+            consoleOutputQueue.async(flags: .barrier) {
+                self.logs.removeFirst()
+            }
         }
         
         trimMemoryItems()
