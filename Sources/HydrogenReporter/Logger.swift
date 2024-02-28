@@ -178,7 +178,7 @@ public class Logger: NSObject {
     
     public var consoleOutput: String {
         get {
-            return consoleOutputQueue.sync {
+            return consoleOutputQueue.async {
                 return _consoleOutput
             }
         }
@@ -191,7 +191,7 @@ public class Logger: NSObject {
     
     public var stdout: String {
         get {
-            return consoleOutputQueue.sync {
+            return consoleOutputQueue.async {
                 return _stdout
             }
         }
@@ -204,7 +204,7 @@ public class Logger: NSObject {
     
     public var stderr: String {
         get {
-            return consoleOutputQueue.sync {
+            return consoleOutputQueue.async {
                 return _stderr
             }
         }
@@ -255,8 +255,10 @@ public class Logger: NSObject {
     private func appendLog(log: LogItem, description: String) {
         consoleOutputQueue.async(flags: .barrier) {
             self.logs.append(log)
-            
-            if self.logs.count > self.config.historyLength && !self.consoleOutput.isEmpty {
+        }
+        
+        if self.logs.count > self.config.historyLength && !self.consoleOutput.isEmpty {
+            consoleOutputQueue.async(flags: .barrier) {
                 self.logs.removeFirst()
             }
         }
