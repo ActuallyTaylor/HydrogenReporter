@@ -172,15 +172,13 @@ public class Logger: NSObject {
     var isInterceptingConsoleOutput: Bool = false
     
     private let consoleOutputQueue: DispatchQueue
-    @objc dynamic internal var _consoleOutput: String = ""
-    @objc dynamic internal var _stdout: String = ""
-    @objc dynamic internal var _stderr: String = ""
+    private var _consoleOutput: String = ""
+    private var _stdout: String = ""
+    private var _stderr: String = ""
     
     public var consoleOutput: String {
         get {
-            return consoleOutputQueue.async {
                 return _consoleOutput
-            }
         }
         set {
             consoleOutputQueue.async(flags: .barrier) {
@@ -191,9 +189,7 @@ public class Logger: NSObject {
     
     public var stdout: String {
         get {
-            return consoleOutputQueue.async {
                 return _stdout
-            }
         }
         set {
             consoleOutputQueue.async(flags: .barrier) {
@@ -204,9 +200,7 @@ public class Logger: NSObject {
     
     public var stderr: String {
         get {
-            return consoleOutputQueue.async {
-                return _stderr
-            }
+            return _stderr
         }
         set {
             consoleOutputQueue.async(flags: .barrier) {
