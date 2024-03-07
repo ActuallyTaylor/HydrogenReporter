@@ -51,13 +51,13 @@ struct LoggerView: View {
                 .bold()
             HStack(alignment: .center) {
                 Text("✨ \(totalLogs)")
-                Text("\(Logger.LogLevel.fatal.emoji()) \(totalFatalLogs)")
-                Text("\(Logger.LogLevel.error.emoji()) \(totalErrorLogs)")
-                Text("\(Logger.LogLevel.warn.emoji()) \(totalWarnLogs)")
-                Text("\(Logger.LogLevel.info.emoji()) \(totalInfoLogs)")
-                Text("\(Logger.LogLevel.success.emoji()) \(totalSuccessLogs)")
-                Text("\(Logger.LogLevel.working.emoji()) \(totalWorkingLogs)")
-                Text("\(Logger.LogLevel.debug.emoji()) \(totalDebugLogs)")
+                Text("\(LogLevel.fatal.emoji()) \(totalFatalLogs)")
+                Text("\(LogLevel.error.emoji()) \(totalErrorLogs)")
+                Text("\(LogLevel.warn.emoji()) \(totalWarnLogs)")
+                Text("\(LogLevel.info.emoji()) \(totalInfoLogs)")
+                Text("\(LogLevel.success.emoji()) \(totalSuccessLogs)")
+                Text("\(LogLevel.working.emoji()) \(totalWorkingLogs)")
+                Text("\(LogLevel.debug.emoji()) \(totalDebugLogs)")
             }
             .font(.caption2)
             
@@ -66,13 +66,13 @@ struct LoggerView: View {
                 .font(.caption)
                 .bold()
             HStack {
-                Text("\(Logger.LogLevel.fatal.emoji()) \(getPercent(value: totalFatalLogs, divisor: newTotalLogs))")
-                Text("\(Logger.LogLevel.error.emoji()) \(getPercent(value: totalErrorLogs, divisor: newTotalLogs))")
-                Text("\(Logger.LogLevel.warn.emoji()) \(getPercent(value: totalWarnLogs, divisor: newTotalLogs))")
-                Text("\(Logger.LogLevel.info.emoji()) \(getPercent(value: totalInfoLogs, divisor: newTotalLogs))")
-                Text("\(Logger.LogLevel.success.emoji()) \(getPercent(value: totalSuccessLogs, divisor: newTotalLogs))")
-                Text("\(Logger.LogLevel.working.emoji()) \(getPercent(value: totalWorkingLogs, divisor: newTotalLogs))")
-                Text("\(Logger.LogLevel.debug.emoji()) \(getPercent(value: totalDebugLogs, divisor: newTotalLogs))")
+                Text("\(LogLevel.fatal.emoji()) \(getPercent(value: totalFatalLogs, divisor: newTotalLogs))")
+                Text("\(LogLevel.error.emoji()) \(getPercent(value: totalErrorLogs, divisor: newTotalLogs))")
+                Text("\(LogLevel.warn.emoji()) \(getPercent(value: totalWarnLogs, divisor: newTotalLogs))")
+                Text("\(LogLevel.info.emoji()) \(getPercent(value: totalInfoLogs, divisor: newTotalLogs))")
+                Text("\(LogLevel.success.emoji()) \(getPercent(value: totalSuccessLogs, divisor: newTotalLogs))")
+                Text("\(LogLevel.working.emoji()) \(getPercent(value: totalWorkingLogs, divisor: newTotalLogs))")
+                Text("\(LogLevel.debug.emoji()) \(getPercent(value: totalDebugLogs, divisor: newTotalLogs))")
             }
             .font(.caption2)
         }

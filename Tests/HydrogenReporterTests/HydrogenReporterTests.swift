@@ -2,9 +2,10 @@ import XCTest
 @testable import HydrogenReporter
 
 final class HydrogenReporterTests: XCTestCase {
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
+    
+    func testAppendRepeatedly() {
+        for i in 0..<100000 {
+            LOG("Test log", i, level: .info)
+        }
     }
 }
