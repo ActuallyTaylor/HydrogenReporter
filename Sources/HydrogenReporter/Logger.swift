@@ -7,7 +7,7 @@ public class Logger: ObservableObject {
     
     internal var config: LoggerConfig = .defaultConfig
     
-    @Published public var logs: [LogItem] = []
+    public var logs: [LogItem] = []
     
     // MARK: Console Intercepting
     internal var originalSTDOUTDescriptor: Int32
@@ -19,9 +19,9 @@ public class Logger: ObservableObject {
     internal let stderrInputPipe = Pipe()
     internal let stderrOutputPipe = Pipe()
     
-    @Published public var consoleOutput: String = ""
-    @Published public var stdout: String = ""
-    @Published public var stderr: String = ""
+    public var consoleOutput: String = ""
+    public var stdout: String = ""
+    public var stderr: String = ""
     
     var isInterceptingConsoleOutput: Bool = false
     
