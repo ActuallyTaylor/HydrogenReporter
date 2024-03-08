@@ -4,6 +4,7 @@
  This data structure was selected because HydrogenReporter rarely needs to loop over the list of logs.
  When it does this we can take the hit of having to reverse the linked list
 */
+
 import Foundation
 
 public class ListNode<T>: Copying {
