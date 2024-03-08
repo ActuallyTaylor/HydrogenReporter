@@ -1,9 +1,8 @@
 import XCTest
 @testable import HydrogenReporter
 
-final class HydrogenReporterTests: XCTestCase {
+final class LinkedListTests: XCTestCase {
     func testLinkedList() {
-        // Example usage:
         let linkedList = LinkedList<Int>()
         linkedList.append(value: 1)
         linkedList.append(value: 2)
@@ -15,7 +14,6 @@ final class HydrogenReporterTests: XCTestCase {
     }
     
     func testReverseLinkedList() {
-        // Example usage:
         let linkedList = LinkedList<Int>()
         linkedList.append(value: 1)
         linkedList.append(value: 2)
@@ -29,7 +27,6 @@ final class HydrogenReporterTests: XCTestCase {
     }
 
     func testRemoveTail() {
-        // Example usage:
         let linkedList = LinkedList<Int>()
         linkedList.append(value: 1)
         linkedList.append(value: 2)
@@ -44,7 +41,6 @@ final class HydrogenReporterTests: XCTestCase {
     }
     
     func testRemoveHead() {
-        // Example usage:
         let linkedList = LinkedList<Int>()
         linkedList.append(value: 1)
         linkedList.append(value: 2)
