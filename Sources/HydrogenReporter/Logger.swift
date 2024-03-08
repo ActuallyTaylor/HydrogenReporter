@@ -7,7 +7,7 @@ public class Logger: ObservableObject {
     
     internal var config: LoggerConfig = .defaultConfig
     
-    public var logs: [LogItem] = []
+    public var logs: LinkedList<LogItem> = LinkedList()
     
     // MARK: Console Intercepting
     internal var originalSTDOUTDescriptor: Int32
@@ -25,6 +25,8 @@ public class Logger: ObservableObject {
     
     var isInterceptingConsoleOutput: Bool = false
     
+    private let updateQueue = DispatchQueue(label: "hydrogen_queue", qos: .utility)
+
     init() {
         originalSTDOUTDescriptor = FileHandle.standardOutput.fileDescriptor
         originalSTDERRDescriptor = FileHandle.standardError.fileDescriptor
@@ -60,11 +62,11 @@ public class Logger: ObservableObject {
     }
     
     private func appendLog(log: LogItem, description: String) {
-        DispatchQueue.main.async {
-            self.logs.append(log)
+        updateQueue.async {
+            self.logs.append(value: log)
             
             if self.logs.count > self.config.historyLength {
-                self.logs.removeFirst()
+                self.logs.removeTail()
             }
             
             self.consoleOutput.append(description)
@@ -149,18 +151,20 @@ public class Logger: ObservableObject {
         let currentDate = config.dateFormatter().string(from: Date())
         var compiledLogs: String = "\(config.applicationName) logs for \(currentDate)\n"
         
-        let totalLogs = logs.count
-        let totalFatalLogs = logs.filter({$0.level == .fatal}).count
-        let totalErrorLogs = logs.filter({$0.level == .error}).count
-        let totalWarnLogs = logs.filter({$0.level == .warn}).count
-        let totalInfoLogs = logs.filter({$0.level == .info}).count
-        let totalSuccessLogs = logs.filter({$0.level == .success}).count
-        let totalWorkingLogs = logs.filter({$0.level == .working}).count
-        let totalDebugLogs = logs.filter({$0.level == .debug}).count
+        let logArray = logs.reversed().collectElements()
+        
+        let totalLogs = logArray.count
+        let totalFatalLogs = logArray.filter({$0.level == .fatal}).count
+        let totalErrorLogs = logArray.filter({$0.level == .error}).count
+        let totalWarnLogs = logArray.filter({$0.level == .warn}).count
+        let totalInfoLogs = logArray.filter({$0.level == .info}).count
+        let totalSuccessLogs = logArray.filter({$0.level == .success}).count
+        let totalWorkingLogs = logArray.filter({$0.level == .working}).count
+        let totalDebugLogs = logArray.filter({$0.level == .debug}).count
         
         let newTotalLogs = totalLogs == 0 ? 1 : totalLogs
         // Statistics Data to be logged at the top of the file
-        compiledLogs.append("--- ✨ Total Logs: \(logs.count) ---\n")
+        compiledLogs.append("--- ✨ Total Logs: \(logArray.count) ✨ ---\n")
         compiledLogs.append("--- \(LogLevel.fatal.emoji()) Total Fatal Error Logs: \(totalFatalLogs) ---\n")
         compiledLogs.append("--- \(LogLevel.error.emoji()) Total Error Logs: \(totalErrorLogs) ---\n")
         compiledLogs.append("--- \(LogLevel.warn.emoji()) Total Warn Logs: \(totalWarnLogs) ---\n")
@@ -179,7 +183,7 @@ public class Logger: ObservableObject {
         
         compiledLogs.append("=== START LOGS ===\n")
         
-        compiledLogs.append(logs.compactMap({$0.complexDescription}).joined(separator: "\n"))
+        compiledLogs.append(logArray.compactMap({$0.complexDescription}).joined(separator: "\n"))
         
         compiledLogs.append("\n=== END LOGS ===")
         
